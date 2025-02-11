@@ -4,7 +4,7 @@ clean:
 	rm -rf build
 
 build:
-	go build -o build/ ./cmd/daylength
+	go build -o build/ ./cmd/daylight
 
 dev:
-	go run ./cmd/daylength
+	go run ./cmd/daylight
