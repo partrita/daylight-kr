@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/term"
 	_ "time/tzdata"
 
 	daylight "github.com/jbreckmckye/daylight/internal"
@@ -47,6 +48,14 @@ func main() {
 	//	TZ:      "Arctic/Longyearbyen",
 	//}
 
+	//ipInfo = IPInfo{
+	//	IP:      "any",
+	//	City:    "south pole",
+	//	Country: "Antartica",
+	//	Loc:     "-90,0",
+	//	TZ:      "Antarctica/Rothera",
+	//}
+
 	fmt.Printf("response was %v\n", ipInfo)
 	latlong, err := daylight.LocationToLatLong(ipInfo.Loc)
 	checkErr(err)
@@ -63,6 +72,8 @@ func main() {
 	fmt.Printf("your local time for rise %q\n", daylight.LocalisedTime(suntimes.Rises, timezone))
 	fmt.Printf("your local time for set %q\n", daylight.LocalisedTime(suntimes.Sets, timezone))
 
+	pretty := prettyMode()
+	fmt.Printf("should use pretty mode? %v\n", pretty)
 }
 
 func fetchIPInfo() (IPInfo, error) {
@@ -78,6 +89,23 @@ func fetchIPInfo() (IPInfo, error) {
 
 	err = decoder.Decode(&result)
 	return result, err
+}
+
+func prettyMode() bool {
+	if !term.IsTerminal(0) {
+		return false
+	}
+
+	width, _, err := term.GetSize(0)
+	if err != nil {
+		return false
+	}
+
+	if width < 80 {
+		return false
+	}
+
+	return true
 }
 
 func checkErr(err error) {

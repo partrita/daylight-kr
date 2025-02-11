@@ -4,7 +4,7 @@ clean:
 	rm -rf build
 
 build:
-	go build -o build/ ./cmd/daylight
+	go build -ldflags="-w -s" -o build/ ./cmd/daylight
 
 dev:
 	go run ./cmd/daylight
