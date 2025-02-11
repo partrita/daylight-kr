@@ -1,4 +1,4 @@
-# daylength
+# daylight
 
 This is a tiny, almost toy command line program to tell you the length of the day at your location.
 
@@ -12,8 +12,8 @@ It uses https://ipinfo.io to get your IP lat/long then [go-sunrise](https://ipin
 When sun is coming:
 
 ```
-daylength
-=========
+daylight
+========
 
 Your location lat 51.56 / lng 0.01  | Date Jan 29 | Time 16:50 PM
 
@@ -121,4 +121,24 @@ calculation per day
                :::::::::  .::            
                ::    ::      .           
                .      :                                           
+```
+
+```
+
+⠀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+　　　　　　*　　　　　　　　　　　.
+.　　　　☾　　　　　　　　　. 　　✦⠀　,　
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀.　　　　　 　　⠀　　　⠀.　
+　　˚　　　⠀　⠀  　　,　　　　　　.
+　　　　　　　　　　　　　.
+　　　　　　*⠀　　⠀  ✮　　　　　⠀✦⠀　
+　　　　　　　　　　　　　　　　　　.
+　　　　.　　　　.　　　⠀
+　　　　✩　　　　　　　.
+　　　　　　　✴
+　　　˚　　　　　　　　ﾟ　　　　　.
+　.⠀　　⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀,
+　　　*　　⠀.★
+　　　　　.　　　　　　　　　　⠀✦
+　˚　　　　　　　　　　　　　　*　　　　　
 ```
