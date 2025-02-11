@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 	"net/http"
+	"time"
 
 	_ "time/tzdata"
 
 	daylight "github.com/jbreckmckye/daylight/internal"
-	sunrise "github.com/nathan-osman/go-sunrise"
 )
 
 type IPInfo struct {
@@ -30,26 +29,40 @@ func main() {
 	ipInfo, err := fetchIPInfo()
 	checkErr(err)
 
+	// Testing
+
+	//ipInfo = IPInfo{
+	//	IP:      "any",
+	//	City:    "cape town",
+	//	Country: "south africa",
+	//	Loc:     "-33.9258,18.4232",
+	//	TZ:      "Africa/Johannesburg",
+	//}
+
+	//ipInfo = IPInfo{
+	//	IP:      "any",
+	//	City:    "svalbard",
+	//	Country: "norway",
+	//	Loc:     "77.8750,20.9752",
+	//	TZ:      "Arctic/Longyearbyen",
+	//}
+
 	fmt.Printf("response was %v\n", ipInfo)
 	latlong, err := daylight.LocationToLatLong(ipInfo.Loc)
 	checkErr(err)
 
 	fmt.Printf("latlong was %v\n", latlong)
 
-	timezone, err := time.LoadLocation(ipInfo.TZ) // should be time.LoadLocation(ipInfo.TZ) but for testing
+	timezone, err := time.LoadLocation(ipInfo.TZ)
 	checkErr(err)
 
-	// This will get the sunrise / sunset times in UTC
-	rise, set := sunrise.SunriseSunset(
-    latlong.Lat, latlong.Lng, 
-    2000, time.February, 1,  // 2000-01-01
-  )
-	fmt.Printf("rise %q, set %q\n", rise, set)
-	fmt.Printf("your local time for rise %q\n", rise.In(timezone))
-	fmt.Printf("your local time for set %q\n", set.In(timezone))
+	suntimes := daylight.SunTimesForPlaceDate(latlong, time.Now().In(timezone))
 
-	// put into https://github.com/nathan-osman/go-sunrise
-	// print
+	fmt.Printf("rise %q, set %q\n", suntimes.Rises, suntimes.Sets)
+	fmt.Printf("polar day %v, night %v\n", suntimes.PolarDay, suntimes.PolarNight)
+	fmt.Printf("your local time for rise %q\n", daylight.LocalisedTime(suntimes.Rises, timezone))
+	fmt.Printf("your local time for set %q\n", daylight.LocalisedTime(suntimes.Sets, timezone))
+
 }
 
 func fetchIPInfo() (IPInfo, error) {
