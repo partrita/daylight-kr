@@ -1,0 +1,20 @@
+daylight
+========
+
+SUNRISE {{ .Rise }}
+SUNSET  {{ .Sets }}
+
+Day length today: {{ .Len }}
+That's {{ .Diff }} than yesterday
+
+Day will be {{ .Projected }} on:
+{{ .ProjectedDate }} {{ .ProjectedDistance }}
+
+Next dawn {{ .NextDawn }}
+
+{{ if .Day }}Daylight remaining {{ .Rem }}{{end}}
+
+Your location (based on IP) lat {{ .Lat }} / lng {{ .Lng }}
+Time is {{ .Date }}, {{ .HHMM }}
+
+github.com/jbreckmckye/daylight

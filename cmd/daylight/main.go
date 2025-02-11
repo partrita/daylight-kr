@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"text/template"
 	"time"
 
 	"golang.org/x/term"
 	_ "time/tzdata"
 
 	daylight "github.com/jbreckmckye/daylight/internal"
+	templates "github.com/jbreckmckye/daylight/internal/templates"
 )
 
 type IPInfo struct {
@@ -65,7 +69,8 @@ func main() {
 	timezone, err := time.LoadLocation(ipInfo.TZ)
 	checkErr(err)
 
-	suntimes := daylight.SunTimesForPlaceDate(latlong, time.Now().In(timezone))
+	now := time.Now().In(timezone)
+	suntimes := daylight.SunTimesForPlaceDate(latlong, now)
 
 	fmt.Printf("rise %q, set %q\n", suntimes.Rises, suntimes.Sets)
 	fmt.Printf("polar day %v, night %v\n", suntimes.PolarDay, suntimes.PolarNight)
@@ -74,6 +79,28 @@ func main() {
 
 	pretty := prettyMode()
 	fmt.Printf("should use pretty mode? %v\n", pretty)
+	print(".......\n")
+
+	tmpl, err := template.New("today").Parse(templates.TodayTmpl)
+	checkErr(err)
+
+	err = tmpl.Execute(os.Stdout, templates.TodayTmplModel{
+		Lat:               strconv.FormatFloat(latlong.Lat, 'g', 4, 64),
+		Lng:               strconv.FormatFloat(latlong.Lng, 'g', 4, 64),
+		Date:              now.Format("Jan 02"),
+		HHMM:              now.Format("15:04 PM"),
+		Rise:              suntimes.Rises.Format("15:04 PM"),
+		Sets:              suntimes.Sets.Format("15:04 PM"),
+		Len:               "<length>",
+		Diff:              "<diff>",
+		Projected:         "<1hr longer/1hr shorter/longest day/shortest day>",
+		ProjectedDate:     "<when>",
+		ProjectedDistance: "<(expleened)>",
+		NextDawn:          "<next dawn>",
+		Day:               true,
+		Rem:               "<remaining>",
+	})
+
 }
 
 func fetchIPInfo() (IPInfo, error) {
