@@ -7,6 +7,8 @@ and count off the days until the dreary darkness is gone. This CLI replaces that
 
 It uses https://ipinfo.io to get your IP lat/long then [go-sunrise](https://ipinfo.io) to figure out the times.
 
+## DESIGNS
+
 When sun is coming:
 
 ```
@@ -33,31 +35,56 @@ November 12 (09:00)               ⠀⠀⠀⠀⠀  ⠀ ⠀ ⠀⠀⠘⣿⣿⠁⠀
 ADVICE: Sun is coming! Make a note of how it's getting much lighter
 ```
 
-When sun is going:
+- Report on user location so they can confirm or change. + timezone?
+- Show sunrise / sunset
+
+- Daytime?
+  - yes: light remaining
+
+- Day length
+  - vs yesterday
+
+- Days growing?
+  - Day that will be 1 hour longer || Day max length in
+
+- Days shrinking?
+  - Day that will be 1 hour shorter || Min day length in...
+
+## `daylength year`
 
 ```
-daylength
-=========
+Your location lat 51.56 / lng 0.01
 
-Your location lat 51.56 / lng 0.01  | Date Nov 12 | Time 16:50 PM
++---------------------------------------------------------------------+
+|  Month  |  Typical sunrise  | Typical sunset  |  Typical day length |
++---------------------------------------------------------------------+
+these are just based on the 14th of each month...
 
-SUNRISE 07:44 AM                    ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-SUNSET  16:14 PM                    ⠀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-                                    ⠀⠀⠀⠀⠀⠀⠀⠸⣷⣦⣀⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-Night remaining: 14:30              ⠀⠀⠀⠀⠀⠀⠀⠀⠙⣿⣿⣿⣦⠀⠠⠾⠿⣿⣷⠀⠀⠀⠀⠀⣠⣤⣄⠀⠀⠀
-                                     ⠀⠀⠀⠀⠀⠀⠀⠀⢸⠟⢉⣠⣤⣶⡆⠀⣠⣈⠀⢀⣠⣴⣿⣿⠋⠀⠀⠀⠀
-Day length was 09:00 hrs            ⠀⢀⡀⢀⣀⣀⣠⣤⡄⢀⣀⡘⣿⣿⣿⣷⣼⣿⣿⣷⡄⠹⣿⡿⠁⠀⠀⠀⠀⠀
-That's 3m, 12s less than yesterday   ⠀⠻⠿⢿⣿⣿⣿⠁⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⣁⠀⠋⠀⠀⠀⠀⠀⠀⠀
-                                      ⠀⠀⠀⠀⠈⠻⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢰⣄⣀⠀⠀⠀⠀⠀
-Day will be 1 hour shorter on:       ⠀⠀⠀⠀⠀⠀⣠⡀⠀⣴⣿⣿⣿⣿⣿⣿⣿⡿⢿⡿⠀⣾⣿⣿⣿⣿⣶⡄⠀
-Debember 7 (20 days away)             ⠀⠀⠀⢀⣾⣿⣷⡀⠻⣿⣿⡿⠻⣿⣿⣿⣿⠀⠀⠈⠉⠉⠉⠀⠀⠀⠀⠀
-                                     ⠀⠀⣠⣾⡿⠟⠉⠉⠀⢀⡉⠁⠀⠛⠛⢉⣠⣴⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀
-Next day that will be this long:    ⠀ ⠈⠉⠉⠀⠀⠀⠀⠀⢸⣿⣿⡿⠉⠀⠙⠿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀
-January 29 (78 days away)         ⠀⠀⠀⠀  ⠀   ⠀⠀⠘⣿⣿⠁⠀⠀⠀⠀⠀⠙⠿⣷⠀⠀⠀⠀⠀⠀⠀
-                                                ⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀  ⠃⠀⠀⠀⠀⠀⠀⠀
-
-ADVICE: Winter is coming, so set your alarm early to get the most sun
 ```
+
+## `daylength month`
+
+```
+Your location lat 51.56 / lng 0.01
+
++------------------------------------------------------+
+|  Day   |  Sunrise  | Sunset  |  Day length |  Change  |
++------------------------------------------------------+
+| Feb 28 |
+| Mar 01 |
+calculation per day
+
+```
+
+
+## Options
+
+```shell
+--latlong
+--timezone
+--date
+```
+
 
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

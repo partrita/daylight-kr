@@ -36,13 +36,13 @@ func main() {
 
 	fmt.Printf("latlong was %v\n", latlong)
 
-	timezone, err := time.LoadLocation("Canada/Eastern") // should be time.LoadLocation(ipInfo.TZ) but for testing
+	timezone, err := time.LoadLocation(ipInfo.TZ) // should be time.LoadLocation(ipInfo.TZ) but for testing
 	checkErr(err)
 
 	// This will get the sunrise / sunset times in UTC
 	rise, set := sunrise.SunriseSunset(
-    43.65, -79.38,          // Toronto, CA
-    2000, time.January, 1,  // 2000-01-01
+    latlong.Lat, latlong.Lng, 
+    2000, time.February, 1,  // 2000-01-01
   )
 	fmt.Printf("rise %q, set %q\n", rise, set)
 	fmt.Printf("your local time for rise %q\n", rise.In(timezone))
