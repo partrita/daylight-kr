@@ -15,8 +15,11 @@ type LatLong struct {
 }
 
 type SunTimes struct {
-	Rises      time.Time
-	Sets       time.Time
+	// These times are only valid if !PolarDay && !PolarNight
+	Rises  time.Time
+	Sets   time.Time
+	Length time.Duration
+	// 24-hour day / night at far latitudes
 	PolarNight bool
 	PolarDay   bool
 }
@@ -57,6 +60,8 @@ func SunTimesForPlaceDate(latlong LatLong, date time.Time) SunTimes {
 		year, month, day,
 	)
 
+	length := sets.Sub(rises)
+
 	polarDay := false
 	polarNight := false
 
@@ -68,17 +73,17 @@ func SunTimesForPlaceDate(latlong LatLong, date time.Time) SunTimes {
 		isSummer := (month > time.March) && (month < time.October)
 		isWinter := !isSummer
 
-		fmt.Printf("isNorth %v, isSouth %v \n", isNorth, isSouth)
-
 		switch {
 		case isNorth && isSummer, isSouth && isWinter:
 			{
 				polarDay = true
+				length = time.Hour * 24
 			}
 
 		case isNorth && isWinter, isSouth && isSummer:
 			{
 				polarNight = true
+				length = time.Duration(0)
 			}
 		}
 	}
@@ -86,6 +91,7 @@ func SunTimesForPlaceDate(latlong LatLong, date time.Time) SunTimes {
 	return SunTimes{
 		Rises:      rises,
 		Sets:       sets,
+		Length:     length,
 		PolarNight: polarNight,
 		PolarDay:   polarDay,
 	}
@@ -96,10 +102,6 @@ func SunTimesYesterday(latlong LatLong, today time.Time) SunTimes {
 	return SunTimesForPlaceDate(latlong, yesterday)
 }
 
-func DurationSeconds(s SunTimes) int64 {
-	return int64(s.Sets.Sub(s.Rises).Seconds())
-}
-
-func LocalisedTime(t time.Time, tz *time.Location) string {
-	return t.In(tz).Format("15:04 PM")
+func (s SunTimes) ApproximateNoon() time.Time {
+	return s.Rises.Add(s.Length / 2)
 }

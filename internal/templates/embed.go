@@ -10,6 +10,8 @@ type TodayTmplModel struct {
 	Lng  string
 	Rise string
 	Sets string
+	Noon string
+	IP   string
 	Len  string
 	Diff string
 }

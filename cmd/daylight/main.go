@@ -81,8 +81,10 @@ func main() {
 		Lng:  strconv.FormatFloat(latlong.Lng, 'g', 4, 64),
 		Rise: daylight.LocalisedTime(suntimes.Rises, timezone),
 		Sets: daylight.LocalisedTime(suntimes.Sets, timezone),
+		Noon: daylight.FormatNoon(suntimes, timezone),
 		Len:  daylight.FormatDayLength(suntimes),
 		Diff: daylight.FormatLengthDiff(suntimes, yesterday),
+		IP:   ipInfo.IP,
 	})
 
 }
