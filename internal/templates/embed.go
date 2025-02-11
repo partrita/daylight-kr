@@ -6,18 +6,10 @@ import _ "embed"
 var TodayTmpl string
 
 type TodayTmplModel struct {
-	Lat               string
-	Lng               string
-	Date              string
-	HHMM              string
-	Rise              string
-	Sets              string
-	Len               string
-	Diff              string
-	Projected         string
-	ProjectedDate     string
-	ProjectedDistance string
-	NextDawn          string
-	Day               bool
-	Rem               string
+	Lat  string
+	Lng  string
+	Rise string
+	Sets string
+	Len  string
+	Diff string
 }

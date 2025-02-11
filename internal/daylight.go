@@ -2,10 +2,11 @@ package internal
 
 import (
 	"fmt"
-	"github.com/nathan-osman/go-sunrise"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/nathan-osman/go-sunrise"
 )
 
 type LatLong struct {
@@ -88,6 +89,15 @@ func SunTimesForPlaceDate(latlong LatLong, date time.Time) SunTimes {
 		PolarNight: polarNight,
 		PolarDay:   polarDay,
 	}
+}
+
+func SunTimesYesterday(latlong LatLong, today time.Time) SunTimes {
+	yesterday := today.AddDate(0, 0, -1)
+	return SunTimesForPlaceDate(latlong, yesterday)
+}
+
+func DurationSeconds(s SunTimes) int64 {
+	return int64(s.Sets.Sub(s.Rises).Seconds())
 }
 
 func LocalisedTime(t time.Time, tz *time.Location) string {
