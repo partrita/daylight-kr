@@ -1,17 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 
 	_ "time/tzdata"
 
 	"golang.org/x/term"
+	"github.com/fatih/color"
 
 	daylight "github.com/jbreckmckye/daylight/internal"
 	templates "github.com/jbreckmckye/daylight/internal/templates"
@@ -76,7 +79,8 @@ func main() {
 	tmpl, err := template.New("today").Parse(templates.TodayTmpl)
 	checkErr(err)
 
-	err = tmpl.Execute(os.Stdout, templates.TodayTmplModel{
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, templates.TodayTmplModel{
 		Lat:  strconv.FormatFloat(latlong.Lat, 'g', 4, 64),
 		Lng:  strconv.FormatFloat(latlong.Lng, 'g', 4, 64),
 		Rise: daylight.LocalisedTime(suntimes.Rises, timezone),
@@ -86,6 +90,16 @@ func main() {
 		Diff: daylight.FormatLengthDiff(suntimes, yesterday),
 		IP:   ipInfo.IP,
 	})
+	checkErr(err)
+
+	var output string
+	if prettyMode() {
+		output = sunnify(buf.String())
+	} else {
+		output = buf.String()
+	}
+
+	fmt.Println(output)
 
 }
 
@@ -120,6 +134,34 @@ func prettyMode() bool {
 
 	return true
 }
+
+// sunnify makes an input string... sunny
+func sunnify(s string) string {
+	lines := strings.Split(s, "\n")
+	sunLines := strings.Split(templates.SunTxt, "\n")
+
+	yellow := color.New(color.FgHiYellow, color.Bold)
+
+  var output string
+	for lineN, line := range lines {
+    if lineN >= len(sunLines) {
+			// "Picture" is complete, skip concatenations
+      output = output + line + "\n"
+			break
+		}
+
+		padding := 40 - len(line)
+		if padding > 0 { // This should always be true, if not we'll get unpleasant ragged edges
+      line = line + strings.Repeat(" ", padding)
+		} 
+    line = line + yellow.Sprint(sunLines[lineN])
+		
+		output = output + line + "\n"
+	}
+
+	return output
+}
+
 
 func checkErr(err error) {
 	if err != nil {
