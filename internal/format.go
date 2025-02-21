@@ -5,6 +5,8 @@ import (
 	"time"
 	"strings"
 
+	"golang.org/x/term"
+
 	templates "github.com/jbreckmckye/daylight/internal/templates"
 
 	"github.com/fatih/color"
@@ -78,6 +80,23 @@ func FormatSets(s SunTimes, tz *time.Location) string {
 		return "n/a"
 	}
   return LocalisedTime(s.Sets, tz)
+}
+
+func UsePrettyMode() bool {
+	if !term.IsTerminal(0) {
+		return false
+	}
+
+	width, _, err := term.GetSize(0)
+	if err != nil {
+		return false
+	}
+
+	if width < 80 {
+		return false
+	}
+
+	return true
 }
 
 // Sunnify makes an input string... sunny :-D
