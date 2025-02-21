@@ -14,7 +14,7 @@ type IPInfo struct {
 	TZ      string `json:"timezone"`
 }
 
-const ipinfoUrl = "https://ipinfo.io/json?inc=ip,city,country,loc,timezone"
+const ipinfoUrl = "https://ipinfo.io/json?inc=ip,loc,timezone"
 
 func FetchIPInfo() (IPInfo, error) {
 	res, err := http.Get(ipinfoUrl)
