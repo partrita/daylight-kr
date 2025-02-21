@@ -18,7 +18,7 @@ func FormatDayLength(s SunTimes) string {
 		return "none (polar night)"
 	}
 
-	h, m, _ := DurationHMS(s.Length)
+	h, m, _ := durationHMS(s.Length)
 
 	return fmt.Sprintf("%d hrs, %d mins", h, m)
 }
@@ -42,7 +42,7 @@ func FormatLengthDiff(today SunTimes, yesterday SunTimes) string {
 	}
 
 	diff := (today.Length - yesterday.Length).Abs()
-	h, m, s := DurationHMS(diff)
+	h, m, s := durationHMS(diff)
 	mins := m + (h * 60)
 
 	return fmt.Sprintf("%s%dm %ds vs yesterday", prefix, mins, s)
@@ -61,7 +61,7 @@ func FormatNoon(s SunTimes, tz *time.Location) string {
 	return LocalisedTime(noon, tz)
 }
 
-func DurationHMS(d time.Duration) (hours int64, minutes int64, seconds int64) {
+func durationHMS(d time.Duration) (hours int64, minutes int64, seconds int64) {
 	// iterative subtraction
 	seconds = int64(d.Round(time.Second).Seconds())
 
