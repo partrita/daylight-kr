@@ -53,3 +53,51 @@ func TestFormatDayLength(t *testing.T) {
 		}
 	}
 }
+
+func TestFormatLengthDiff(t *testing.T) {
+	type TestCase struct {
+		today SunTimes
+		yesterday SunTimes
+		want string
+	}
+
+	cases := []TestCase{
+		{
+			today: SunTimes{ Length: 12 * time.Hour },
+			yesterday: SunTimes{ Length: 12 * time.Hour },
+			want: "the same as yesterday",
+		},
+		{
+			today: SunTimes{ Length: (10 * time.Hour) },
+			yesterday: SunTimes{ Length: (10 * time.Hour) + (3 * time.Second)},
+			want: "-0m 3s vs yesterday",
+		},
+		{
+			today: SunTimes{ Length: (10 * time.Hour) },
+			yesterday: SunTimes{ Length: (10 * time.Hour) + (3 * time.Minute) + (3 * time.Second)},
+			want: "-3m 3s vs yesterday",
+		},
+		{
+			today: SunTimes{ Length: (10 * time.Hour) + (3 * time.Second) },
+			yesterday: SunTimes{ Length: (10 * time.Hour) },
+			want: "+0m 3s vs yesterday",
+		},
+		{
+			today: SunTimes{ Length: (10 * time.Hour) + (3 * time.Minute) + (3 * time.Second) },
+			yesterday: SunTimes{ Length: (10 * time.Hour) },
+			want: "+3m 3s vs yesterday",
+		},
+		{ // Extreme case, should never happen
+			today: SunTimes{ Length: (11 * time.Hour) },
+			yesterday: SunTimes{ Length: 10 * time.Hour},
+			want: "+60m 0s vs yesterday",
+		},
+	}
+
+	for _, tc := range cases {
+		got := FormatLengthDiff(tc.today, tc.yesterday)
+		if got != tc.want {
+			t.Fatalf("expected %q but got %q", got, tc.want)
+		}
+	}
+}
