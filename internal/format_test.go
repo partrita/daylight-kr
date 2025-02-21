@@ -12,7 +12,7 @@ func TestFormatDayLength(t *testing.T) {
 	}
 
 	cases := []TestCase{
-		TestCase{
+		{
 			SunTimes: SunTimes{
 				PolarDay:   true,
 				PolarNight: false,
@@ -20,7 +20,7 @@ func TestFormatDayLength(t *testing.T) {
 			},
 			Want: "all day (polar sun)",
 		},
-		TestCase{
+		{
 			SunTimes: SunTimes{
 				PolarDay:   false,
 				PolarNight: true,
@@ -28,7 +28,7 @@ func TestFormatDayLength(t *testing.T) {
 			},
 			Want: "none (polar night)",
 		},
-		TestCase{
+		{
 			SunTimes: SunTimes{
 				PolarDay:   false,
 				PolarNight: false,
@@ -36,7 +36,7 @@ func TestFormatDayLength(t *testing.T) {
 			},
 			Want: "12 hrs, 34 mins",
 		},
-		TestCase{
+		{
 			SunTimes: SunTimes{
 				PolarDay:   false,
 				PolarNight: false,

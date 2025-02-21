@@ -89,14 +89,6 @@ func TestLocationToLatLong(t *testing.T) {
 }
 
 func TestSunTimesForPlaceDate(t *testing.T) {
-	utcTime := func(s string) time.Time {
-		result, err := time.Parse(time.RFC3339, s)
-		if err != nil {
-			panic(err)
-		}
-		return result.UTC()
-	}
-
 	cases := []struct {
 		name         string
 		inputLatLong LatLong
@@ -186,4 +178,26 @@ func TestSunTimesForPlaceDate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestApproximateNoon(t *testing.T) {
+	s := SunTimes{
+		Rises: utcTime("2025-06-20T07:00:00Z"),
+    Length: (time.Hour * 14) + (time.Minute * 40),
+	}
+
+	want := utcTime("2025-06-20T14:20:00Z")
+	got := s.ApproximateNoon()
+	
+	if got != want {
+		t.Fatalf("wanted %v, got %v, for %v", want, got, s)
+	}
+}
+
+func utcTime(s string) time.Time {
+	result, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+	return result.UTC()
 }
