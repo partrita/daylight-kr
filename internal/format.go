@@ -3,6 +3,11 @@ package internal
 import (
 	"fmt"
 	"time"
+	"strings"
+
+	templates "github.com/jbreckmckye/daylight/internal/templates"
+
+	"github.com/fatih/color"
 )
 
 func LocalisedTime(t time.Time, tz *time.Location) string {
@@ -50,15 +55,63 @@ func FormatLengthDiff(today SunTimes, yesterday SunTimes) string {
 
 func FormatNoon(s SunTimes, tz *time.Location) string {
 	if s.PolarDay {
-		return "--"
+		return "n/a"
 	}
 
 	if s.PolarNight {
-		return "--"
+		return "n/a"
 	}
 
 	noon := s.ApproximateNoon()
 	return LocalisedTime(noon, tz)
+}
+
+func FormatRises(s SunTimes, tz *time.Location) string {
+	if (s.Rises == time.Time{}) {
+		return "n/a"
+	}
+  return LocalisedTime(s.Rises, tz)
+}
+
+func FormatSets(s SunTimes, tz *time.Location) string {
+	if (s.Sets == time.Time{}) {
+		return "n/a"
+	}
+  return LocalisedTime(s.Sets, tz)
+}
+
+// Sunnify makes an input string... sunny :-D
+func Sunnify(s string) string {
+	ins := strings.Split(s, "\n")
+	sunLines := strings.Split(templates.SunTxt, "\n")
+
+	yellow := color.New(color.FgHiYellow, color.Bold)
+
+  var output string
+	for lineN, lineIn := range ins {
+    lineOut := ""
+
+    if lineN >= len(sunLines) {
+			// "Picture" is complete, skip concatenations
+      lineOut = lineIn
+
+		} else {
+			lineOut = padToLength(lineIn, 40)
+			lineOut = lineOut + yellow.Sprint(sunLines[lineN])
+		}
+
+		output = output + lineOut + "\n"
+	}
+
+	return output
+}
+
+func padToLength(s string, to int) string {
+	padding := to - len(s)
+	if padding > 0 {
+		return s + strings.Repeat(" ", padding)
+	}
+	return s
 }
 
 func durationHMS(d time.Duration) (hours int64, minutes int64, seconds int64) {
