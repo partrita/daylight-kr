@@ -4,6 +4,18 @@ all: clean build
 clean:
 	rm -rf build
 
+.PHONY: build-all
+build-all: clean
+	GOOS=linux   GOARCH=amd64 go build -ldflags="-w -s" -o build/linux/   ./cmd/daylight
+	GOOS=windows GOARCH=amd64 go build -ldflags="-w -s" -o build/windows/ ./cmd/daylight
+	GOOS=darwin  GOARCH=arm64 go build -ldflags="-w -s" -o build/macos/   ./cmd/daylight
+
+releases: build-all
+	cd build/linux && zip -9 -y -r daylight.zip .
+	cd build/windows && zip -9 -y -r daylight.zip .
+	cd build/macos && zip -9 -y -r daylight.zip .
+
+.PHONY: build
 build:
 	go build -ldflags="-w -s" -o build/ ./cmd/daylight
 
