@@ -11,15 +11,24 @@ import (
 	"github.com/jbreckmckye/daylight/internal"
 )
 
-const (
+var (
 	width = 76
 
-	brightBlue  = lipgloss.Color("#005FFF")
+	brightBlue = lipgloss.AdaptiveColor{
+		Light: "#003FDF",
+		Dark:  "#005FFF",
+	}
 	brightGreen = lipgloss.Color("#00AF00")
-	goldYellow  = lipgloss.Color("#FDC400")
-	offWhite    = lipgloss.Color("#FFFDF5")
-	pink        = lipgloss.Color("#B150E6")
-	dimGrey     = lipgloss.Color("#353533")
+	goldYellow  = lipgloss.AdaptiveColor{
+		Light: "#CD8400",
+		Dark:  "#FDC400",
+	}
+	offWhite = lipgloss.Color("#FFFDF5")
+	pink     = lipgloss.Color("#B150E6")
+	dimGrey  = lipgloss.AdaptiveColor{
+		Light: "#555553",
+		Dark:  "#353533",
+	}
 )
 
 var titleBarStyle = lipgloss.NewStyle().
