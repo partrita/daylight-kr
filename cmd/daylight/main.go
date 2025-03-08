@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"strings"
@@ -11,7 +10,6 @@ import (
 	"github.com/alexflint/go-arg"
 
 	daylight "github.com/jbreckmckye/daylight/internal"
-	templates "github.com/jbreckmckye/daylight/internal/templates"
 )
 
 func main() {
@@ -47,34 +45,23 @@ func main() {
 		checkErr(err)
 	}
 
-	projections := daylight.ProjectedStats(now, timezone, latlong, 10)
-	fmt.Println("Forward projections:")
-	for _, v := range projections {
-		fmt.Printf("%v\n", v)
-	}
-
 	viewmodel := daylight.TodayStats(now, timezone, latlong, ipInfo.IP)
 
-	tmpl := templates.TodayTemplate()
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, viewmodel)
-	checkErr(err)
-
-	var output string
-
 	if args.Short {
-		output = fmt.Sprintf(
-			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s",
+		fmt.Printf(
+			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s\n",
 			viewmodel.Rise, viewmodel.Sets, viewmodel.Len, viewmodel.Diff,
 		)
 	} else {
-		output = buf.String()
+		projections := daylight.ProjectedStats(now, timezone, latlong, 10)
+		fmt.Println("Forward projections:")
+		for _, v := range projections {
+			fmt.Printf("%v\n", v)
+		}
+
+		renders := render(viewmodel)
+		fmt.Println(renders)
 	}
-
-	fmt.Println(output)
-
-	renders := render(viewmodel)
-	fmt.Println(renders)
 }
 
 func checkErr(err error) {

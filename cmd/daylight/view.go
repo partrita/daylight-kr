@@ -113,10 +113,10 @@ func dayBar(vm internal.TodayViewModel) string {
 
 	if vm.DayEndRatio == 0 {
 		// Polar night
-		return bar.Render(night.Width(barWidth).Render(" ")) + "\n"
+		return bar.Render(night.Render(strings.Repeat(".", barWidth))) + "\n"
 	} else if vm.DayEndRatio == 1 {
 		// Polar day
-		return bar.Render(day.Width(barWidth).Render(" ")) + "\n"
+		return bar.Render(day.Render(strings.Repeat("-", barWidth))) + "\n"
 	}
 
 	dayStart := int(math.Round(vm.DayStartRatio * float64(barWidth)))
