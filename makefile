@@ -14,7 +14,6 @@ dev:
 test-manual: clean build
 	echo "=====[TEST HELP]====="
 	./build/daylight --help
-
 	echo "=====[TEST SHORT]====="
 	./build/daylight --short
 	echo "=====[TEST SHORT, XMAS DAY]====="

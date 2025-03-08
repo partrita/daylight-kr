@@ -2,14 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"strings"
 	"time"
-
-	"golang.org/x/term"
-
-	templates "github.com/jbreckmckye/daylight/internal/templates"
-
-	"github.com/fatih/color"
 )
 
 func LocalisedTime(t time.Time, tz *time.Location) string {
@@ -104,57 +97,6 @@ func FormatDayRatio(s SunTimes, tz *time.Location) (start float64, end float64) 
 	sets := float64((setsH * 60) + setsM)
 
 	return rises / dayMins, sets / dayMins
-}
-
-func UsePrettyMode() bool {
-	if !term.IsTerminal(0) {
-		return false
-	}
-
-	width, _, err := term.GetSize(0)
-	if err != nil {
-		return false
-	}
-
-	if width < 80 {
-		return false
-	}
-
-	return true
-}
-
-// Sunnify makes an input string... sunny :-D
-func Sunnify(s string) string {
-	ins := strings.Split(s, "\n")
-	sunLines := strings.Split(templates.SunTxt, "\n")
-
-	yellow := color.New(color.FgHiYellow, color.Bold)
-
-	var output string
-	for lineN, lineIn := range ins {
-		lineOut := ""
-
-		if lineN >= len(sunLines) {
-			// "Picture" is complete, skip concatenations
-			lineOut = lineIn
-
-		} else {
-			lineOut = padToLength(lineIn, 40)
-			lineOut = lineOut + yellow.Sprint(sunLines[lineN])
-		}
-
-		output = output + lineOut + "\n"
-	}
-
-	return output
-}
-
-func padToLength(s string, to int) string {
-	padding := to - len(s)
-	if padding > 0 {
-		return s + strings.Repeat(" ", padding)
-	}
-	return s
 }
 
 func durationHMS(d time.Duration) (hours int64, minutes int64, seconds int64) {

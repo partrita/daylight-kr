@@ -6,9 +6,6 @@ import (
 	"text/template"
 )
 
-//go:embed sun.txt
-var SunTxt string
-
 //go:embed today.go.tmpl
 var todayTmpl string
 

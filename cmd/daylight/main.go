@@ -67,8 +67,6 @@ func main() {
 			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s",
 			viewmodel.Rise, viewmodel.Sets, viewmodel.Len, viewmodel.Diff,
 		)
-	} else if daylight.UsePrettyMode() {
-		output = daylight.Sunnify(buf.String())
 	} else {
 		output = buf.String()
 	}
