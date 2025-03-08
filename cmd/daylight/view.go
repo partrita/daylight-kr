@@ -42,6 +42,7 @@ var titleBarStyle = lipgloss.NewStyle().
 func render(tv internal.TodayView) string {
 	doc := strings.Builder{}
 
+	doc.WriteString("\n")
 	doc.WriteString(todayTitle())
 	doc.WriteString(today(tv))
 

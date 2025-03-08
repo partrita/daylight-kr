@@ -23,7 +23,7 @@ func FetchIPInfo() (IPInfo, error) {
 	}
 
 	defer func() {
-    res.Body.Close()
+		res.Body.Close()
 	}()
 
 	decoder := json.NewDecoder(res.Body)

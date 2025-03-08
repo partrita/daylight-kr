@@ -30,3 +30,7 @@ test-manual: clean build
 	NO_COLOR=true ./build/daylight
 	echo "=====[TEST HERE/NOW]====="
 	./build/daylight
+
+.PHONY: test
+test:
+	go test ./internal
