@@ -2,8 +2,8 @@ package internal
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	"golang.org/x/term"
 
@@ -22,7 +22,7 @@ func FormatDayLength(s SunTimes) string {
 	}
 
 	if s.PolarNight {
-		return "none (polar night)"
+		return "no time (polar night)"
 	}
 
 	h, m, _ := durationHMS(s.Length)
@@ -40,7 +40,7 @@ func FormatLengthDiff(today SunTimes, yesterday SunTimes) string {
 	}
 
 	if direction == 0 {
-		return "the same as yesterday"
+		return "the same"
 	}
 
 	prefix := "+"
@@ -52,7 +52,7 @@ func FormatLengthDiff(today SunTimes, yesterday SunTimes) string {
 	h, m, s := durationHMS(diff)
 	mins := m + (h * 60)
 
-	return fmt.Sprintf("%s%dm %ds vs yesterday", prefix, mins, s)
+	return fmt.Sprintf("%s%dm %ds", prefix, mins, s)
 }
 
 func FormatNoon(s SunTimes, tz *time.Location) string {
@@ -72,14 +72,38 @@ func FormatRises(s SunTimes, tz *time.Location) string {
 	if (s.Rises == time.Time{}) {
 		return "n/a"
 	}
-  return LocalisedTime(s.Rises, tz)
+	return LocalisedTime(s.Rises, tz)
 }
 
 func FormatSets(s SunTimes, tz *time.Location) string {
 	if (s.Sets == time.Time{}) {
 		return "n/a"
 	}
-  return LocalisedTime(s.Sets, tz)
+	return LocalisedTime(s.Sets, tz)
+}
+
+func FormatDate(t time.Time) string {
+	return t.Format("Mon Jan 02")
+}
+
+func FormatDayRatio(s SunTimes, tz *time.Location) (start float64, end float64) {
+	if s.PolarDay {
+		return 0, 1
+	}
+
+	if s.PolarNight {
+		return 0, 0
+	}
+
+	dayMins := float64(24 * 60)
+
+	riseH, riseM, _ := s.Rises.In(tz).Clock()
+	rises := float64((riseH * 60) + riseM)
+
+	setsH, setsM, _ := s.Sets.In(tz).Clock()
+	sets := float64((setsH * 60) + setsM)
+
+	return rises / dayMins, sets / dayMins
 }
 
 func UsePrettyMode() bool {
@@ -106,13 +130,13 @@ func Sunnify(s string) string {
 
 	yellow := color.New(color.FgHiYellow, color.Bold)
 
-  var output string
+	var output string
 	for lineN, lineIn := range ins {
-    lineOut := ""
+		lineOut := ""
 
-    if lineN >= len(sunLines) {
+		if lineN >= len(sunLines) {
 			// "Picture" is complete, skip concatenations
-      lineOut = lineIn
+			lineOut = lineIn
 
 		} else {
 			lineOut = padToLength(lineIn, 40)

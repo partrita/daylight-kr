@@ -47,6 +47,12 @@ func main() {
 		checkErr(err)
 	}
 
+	projections := daylight.ProjectedStats(now, timezone, latlong, 10)
+	fmt.Println("Forward projections:")
+	for _, v := range projections {
+		fmt.Printf("%v\n", v)
+	}
+
 	viewmodel := daylight.TodayStats(now, timezone, latlong, ipInfo.IP)
 
 	tmpl := templates.TodayTemplate()
@@ -58,7 +64,7 @@ func main() {
 
 	if args.Short {
 		output = fmt.Sprintf(
-			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s", 
+			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s",
 			viewmodel.Rise, viewmodel.Sets, viewmodel.Len, viewmodel.Diff,
 		)
 	} else if daylight.UsePrettyMode() {
@@ -68,6 +74,9 @@ func main() {
 	}
 
 	fmt.Println(output)
+
+	renders := render(viewmodel)
+	fmt.Println(renders)
 }
 
 func checkErr(err error) {
