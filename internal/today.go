@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TodayViewModel struct {
+type TodayView struct {
 	Lat           string
 	Lng           string
 	Rise          string
@@ -16,15 +16,23 @@ type TodayViewModel struct {
 	Diff          string
 	DayStartRatio float64
 	DayEndRatio   float64
+	Next10Days    []DayProjection
 }
 
-func TodayStats(today time.Time, timezone *time.Location, latlong LatLong, IP string) TodayViewModel {
+type DayProjection struct {
+	Day    string
+	Rise   string
+	Sets   string
+	Length string
+}
+
+func TodayStats(today time.Time, timezone *time.Location, latlong LatLong, IP string) TodayView {
 	sunTimes := SunTimesForPlaceDate(latlong, today)
 	sunTimesYesterday := SunTimesYesterday(latlong, today)
 
 	dayStartRatio, dayEndRatio := FormatDayRatio(sunTimes, timezone)
 
-	viewmodel := TodayViewModel{
+	viewmodel := TodayView{
 		Lat:           strconv.FormatFloat(latlong.Lat, 'g', 4, 64),
 		Lng:           strconv.FormatFloat(latlong.Lng, 'g', 4, 64),
 		Rise:          FormatRises(sunTimes, timezone),
@@ -35,26 +43,20 @@ func TodayStats(today time.Time, timezone *time.Location, latlong LatLong, IP st
 		Diff:          FormatLengthDiff(sunTimes, sunTimesYesterday),
 		DayStartRatio: dayStartRatio,
 		DayEndRatio:   dayEndRatio,
+		Next10Days:    projections(today, timezone, latlong, 10),
 	}
 
 	return viewmodel
 }
 
-type DaySummaryViewModel struct {
-	Date   string
-	Rise   string
-	Sets   string
-	Length string
-}
-
-func ProjectedStats(today time.Time, timezone *time.Location, latlong LatLong, count int) []DaySummaryViewModel {
+func projections(today time.Time, timezone *time.Location, latlong LatLong, count int) []DayProjection {
 	projectedDates, projectedSunTimes := SunTimesForward(latlong, today, count)
-	outputs := make([]DaySummaryViewModel, count)
+	outputs := make([]DayProjection, count)
 
 	for i, date := range projectedDates {
 		sunTimes := projectedSunTimes[i]
-		outputs[i] = DaySummaryViewModel{
-			Date:   FormatDate(date),
+		outputs[i] = DayProjection{
+			Day:    FormatDate(date),
 			Rise:   FormatRises(sunTimes, timezone),
 			Sets:   FormatSets(sunTimes, timezone),
 			Length: FormatDayLength(sunTimes),

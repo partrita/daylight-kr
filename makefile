@@ -26,5 +26,7 @@ test-manual: clean build
 	./build/daylight --loc="82.4,-14.3" --date="2025-01-02"
 	echo "=====[TEST CAPE TOWN]====="
 	./build/daylight --date="2025-02-03" --loc="-33.92,18.42" --timezone "Africa/Johannesburg"
+	echo "=====[TEST NOCOLOR]====="
+	NO_COLOR=true ./build/daylight
 	echo "=====[TEST HERE/NOW]====="
 	./build/daylight

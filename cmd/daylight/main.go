@@ -28,14 +28,14 @@ func main() {
 	ipInfo, err := daylight.FetchIPInfo()
 	checkErr(err)
 
-	loc := first(args.Loc, ipInfo.Loc)
+	loc := firstNonEmpty(args.Loc, ipInfo.Loc)
 	// If loc was supplied as an arg it might have an escaped negative
 	loc = strings.Replace(loc, "\\", "", -1)
 
 	latlong, err := daylight.LocationToLatLong(loc)
 	checkErr(err)
 
-	tz := first(args.Timezone, ipInfo.TZ)
+	tz := firstNonEmpty(args.Timezone, ipInfo.TZ)
 	timezone, err := time.LoadLocation(tz)
 	checkErr(err)
 
@@ -45,21 +45,15 @@ func main() {
 		checkErr(err)
 	}
 
-	viewmodel := daylight.TodayStats(now, timezone, latlong, ipInfo.IP)
+	todayView := daylight.TodayStats(now, timezone, latlong, ipInfo.IP)
 
 	if args.Short {
 		fmt.Printf(
 			"Rises:  %s\nSets:   %s\nLength: %s\nChange:  %s\n",
-			viewmodel.Rise, viewmodel.Sets, viewmodel.Len, viewmodel.Diff,
+			todayView.Rise, todayView.Sets, todayView.Len, todayView.Diff,
 		)
 	} else {
-		projections := daylight.ProjectedStats(now, timezone, latlong, 10)
-		fmt.Println("Forward projections:")
-		for _, v := range projections {
-			fmt.Printf("%v\n", v)
-		}
-
-		renders := render(viewmodel)
+		renders := render(todayView)
 		fmt.Println(renders)
 	}
 }
@@ -70,7 +64,7 @@ func checkErr(err error) {
 	}
 }
 
-func first(strings ...string) string {
+func firstNonEmpty(strings ...string) string {
 	for _, s := range strings {
 		if s != "" {
 			return s

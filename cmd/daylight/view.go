@@ -18,35 +18,33 @@ const (
 	brightGreen = lipgloss.Color("#00AF00")
 	goldYellow  = lipgloss.Color("#FDC400")
 	offWhite    = lipgloss.Color("#FFFDF5")
-	pink        = lipgloss.Color("#A550DF")
+	pink        = lipgloss.Color("#B150E6")
 	dimGrey     = lipgloss.Color("#353533")
 )
 
-var (
-	titleBarStyle = lipgloss.NewStyle().
-		BorderStyle(lipgloss.DoubleBorder()).
-		BorderForeground(goldYellow).
-		BorderBottom(true).
-		MarginBottom(1).
-		Foreground(goldYellow).
-		Width(width)
-)
+var titleBarStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.DoubleBorder()).
+	BorderForeground(goldYellow).
+	BorderBottom(true).
+	MarginBottom(1).
+	Foreground(goldYellow).
+	Width(width)
 
-func render(vm internal.TodayViewModel) string {
+func render(tv internal.TodayView) string {
 	doc := strings.Builder{}
 
 	doc.WriteString(todayTitle())
-	doc.WriteString(today(vm))
+	doc.WriteString(today(tv))
 
 	doc.WriteString(lengthTitle())
-	doc.WriteString(dayLength(vm))
-	doc.WriteString(dayBar(vm))
+	doc.WriteString(dayLength(tv))
+	doc.WriteString(dayBar(tv))
 
 	doc.WriteString(nextDaysTitle())
-	doc.WriteString(projection())
+	doc.WriteString(projection(tv))
 
 	doc.WriteString(about())
-	doc.WriteString(statusBar(vm))
+	doc.WriteString(statusBar(tv))
 	doc.WriteString(linkString())
 
 	return doc.String()
@@ -56,7 +54,7 @@ func todayTitle() string {
 	return titleBarStyle.Render("Today's daylight") + "\n"
 }
 
-func today(vm internal.TodayViewModel) string {
+func today(tv internal.TodayView) string {
 	graphic := lipgloss.NewStyle().
 		Width(5)
 
@@ -75,11 +73,11 @@ func today(vm internal.TodayViewModel) string {
 
 	contents := lipgloss.JoinHorizontal(lipgloss.Top,
 		graphic.Render(rises),
-		col.Render("Rises\n"+vm.Rise),
+		col.Render("Rises\n"+tv.Rise),
 		graphic.Render(noon),
-		col.Render("Noon\n"+vm.Noon),
+		col.Render("Noon\n"+tv.Noon),
 		graphic.Render(sets),
-		col.Render("Sets\n"+vm.Sets),
+		col.Render("Sets\n"+tv.Sets),
 	)
 
 	return wrap.Render(contents) + "\n"
@@ -89,14 +87,14 @@ func lengthTitle() string {
 	return titleBarStyle.Render("Day length") + "\n"
 }
 
-func dayLength(vm internal.TodayViewModel) string {
+func dayLength(tv internal.TodayView) string {
 	col := lipgloss.NewStyle().
 		Align(lipgloss.Center).
 		Width(35).
 		Height(2)
 
-	summary := fmt.Sprintf("Daylight for:\n%s", vm.Len)
-	yesterday := fmt.Sprintf("versus yesterday:\n%s", vm.Diff)
+	summary := fmt.Sprintf("Daylight for:\n%s", tv.Len)
+	yesterday := fmt.Sprintf("versus yesterday:\n%s", tv.Diff)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top,
 		col.Render(summary),
@@ -104,23 +102,23 @@ func dayLength(vm internal.TodayViewModel) string {
 	) + "\n"
 }
 
-func dayBar(vm internal.TodayViewModel) string {
+func dayBar(tv internal.TodayView) string {
 	barWidth := 72
 
 	night := lipgloss.NewStyle().Background(dimGrey).Foreground(dimGrey)
 	day := lipgloss.NewStyle().Background(brightBlue).Foreground(brightBlue)
 	bar := lipgloss.NewStyle().Padding(1)
 
-	if vm.DayEndRatio == 0 {
+	if tv.DayEndRatio == 0 {
 		// Polar night
 		return bar.Render(night.Render(strings.Repeat(".", barWidth))) + "\n"
-	} else if vm.DayEndRatio == 1 {
+	} else if tv.DayEndRatio == 1 {
 		// Polar day
 		return bar.Render(day.Render(strings.Repeat("-", barWidth))) + "\n"
 	}
 
-	dayStart := int(math.Round(vm.DayStartRatio * float64(barWidth)))
-	dayEnd := int(math.Round(vm.DayEndRatio * float64(barWidth)))
+	dayStart := int(math.Round(tv.DayStartRatio * float64(barWidth)))
+	dayEnd := int(math.Round(tv.DayEndRatio * float64(barWidth)))
 
 	text := strings.Builder{}
 	for i := 0; i <= barWidth; i++ {
@@ -146,52 +144,18 @@ func nextDaysTitle() string {
 	return titleBarStyle.Render("Ten day projection") + "\n"
 }
 
-func statusBar(viewmodel internal.TodayViewModel) string {
-	spans := lipgloss.NewStyle().
-		Foreground(offWhite).
-		Padding(0, 1)
+func projection(tv internal.TodayView) string {
+	rows := make([][]string, len(tv.Next10Days))
 
-	w := lipgloss.Width
-
-	blueTag := spans.Background(brightBlue)
-	goldTag := spans.Background(goldYellow)
-	greenTag := spans.Background(brightGreen)
-	greyTag := spans.Background(dimGrey)
-
-	sLocation := "LOCATION"
-	sLatlong := fmt.Sprintf("Latitude %s, Longitude %s", viewmodel.Lat, viewmodel.Lng)
-	sIPAddress := "IP ADDRESS"
-	sIPData := viewmodel.IP
-
-	stretch := width - w(sLocation) - w(sIPAddress) - w(sIPData) - 6 // 6 padding
-
-	return lipgloss.JoinHorizontal(lipgloss.Top,
-		greenTag.Render(sLocation),
-		greyTag.Width(stretch).Render(sLatlong),
-		blueTag.Render(sIPAddress),
-		goldTag.Render(sIPData),
-	) + "\n"
-}
-
-func projection() string {
-	rows := [][]string{
-		{"Fri 7 March", "afsf", "afsf", "afsfsd"},
-		{"Sat 8 March", "afsfs", "afsf", "dfdf"},
-		{"Sun 9 March", "fdfd", "afsf", "fdfd"},
-		{"Mon 10 March", "Здравствуйте", "afsf", "Привет"},
-		{"Tue 11 March", "Hola", "afsf", "¿Qué tal?"},
-		{"Wed 12 March", "Hola", "afsf", "¿Qué tal?"},
-		{"Thu 13 March", "Hola", "afsf", "¿Qué tal?"},
-		{"Fri 14 March", "Hola", "afsf", "¿Qué tal?"},
-		{"Sat 15 March", "Hola", "afsf", "¿Qué tal?"},
-		{"Sun 16 March", "Hola", "afsf", "¿Qué tal?"},
+	for i, v := range tv.Next10Days {
+		rows[i] = []string{v.Day, v.Rise, v.Sets, v.Length}
 	}
 
 	var (
 		headerStyle  = lipgloss.NewStyle().Foreground(brightBlue).Bold(true).Align(lipgloss.Center)
-		cellStyle    = lipgloss.NewStyle().Padding(0, 1).Width(14)
+		cellStyle    = lipgloss.NewStyle().Padding(0, 3)
 		oddRowStyle  = cellStyle.Foreground(pink)
-		evenRowStyle = cellStyle.Foreground(offWhite)
+		evenRowStyle = cellStyle
 		wrap         = lipgloss.NewStyle().Width(width).Align(lipgloss.Center).Padding(0, 0, 1)
 	)
 
@@ -216,6 +180,33 @@ func projection() string {
 
 func about() string {
 	return titleBarStyle.Render("Your stats") + "\n"
+}
+
+func statusBar(tv internal.TodayView) string {
+	spans := lipgloss.NewStyle().
+		Foreground(offWhite).
+		Padding(0, 1)
+
+	w := lipgloss.Width
+
+	blueTag := spans.Background(brightBlue)
+	goldTag := spans.Background(goldYellow)
+	greenTag := spans.Background(brightGreen)
+	greyTag := spans.Background(dimGrey)
+
+	sLocation := "LOCATION"
+	sLatlong := fmt.Sprintf("Latitude %s, Longitude %s", tv.Lat, tv.Lng)
+	sIPAddress := "IP ADDRESS"
+	sIPData := tv.IP
+
+	stretch := width - w(sLocation) - w(sIPAddress) - w(sIPData) - 6 // 6 padding
+
+	return lipgloss.JoinHorizontal(lipgloss.Top,
+		greenTag.Render(sLocation),
+		greyTag.Width(stretch).Render(sLatlong),
+		blueTag.Render(sIPAddress),
+		goldTag.Render(sIPData),
+	) + "\n"
 }
 
 func linkString() string {
