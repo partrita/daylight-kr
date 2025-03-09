@@ -1,6 +1,8 @@
 # daylight
 
-a command-line program for tracking sunrise and sunset times (Mac, Linux, Windows)
+a command-line program for tracking sunrise and sunset times, for Mac and Linux
+
+(windows is provided but untested)
 
 ![img.png](img.png)
 
@@ -17,7 +19,21 @@ and count off the days until the dreary darkness is gone.
 
 ## Installation
 
-Pick up an executable from the releases or use Homebrew.
+### Homebrew (MacOS and Linux)
+
+```shell
+# Add my tap (formula repository)
+brew tap jbreckmckye/formulae
+# Install daylight
+brew install daylight
+# Check it
+daylight --help
+```
+
+### Manual installation
+
+Pick up the executable for your system in the ['releases`](https://github.com/jbreckmckye/daylight/releases).
+Unzip the package and put the program in a folder that's within your system `PATH`.
 
 ## Usage
 
