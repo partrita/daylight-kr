@@ -30,7 +30,7 @@ daylight --help
 
 ### Manual installation (and Windows)
 
-Pick up the executable for your system in the ['releases`](https://github.com/jbreckmckye/daylight/releases).
+Pick up the executable for your system in the [releases](https://github.com/jbreckmckye/daylight/releases).
 Unzip the package and put the program in a folder that's within your system `PATH`.
 
 There is a Windows binary but I haven't been able to test this. Let me know if you get it working.
