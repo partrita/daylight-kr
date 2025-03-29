@@ -15,6 +15,8 @@ and count off the days until the dreary darkness is gone.
 
 (IP lookup is powered by https://ipinfo.io. They provide a good service so please don't spam requests.)
 
+Daylight is provided under the GPL license.
+
 ## Installation
 
 ### Homebrew (MacOS and Linux)
@@ -114,7 +116,9 @@ Change:  +3m 58s
 
 ## Codebase
 
-I wrote this project to learn Go, so don't expect anything too amazing. Feel free to raise issues.
+I wrote this project to learn Go, so don't expect anything too amazing.
+
+It is probably not in a state to receive pull requests. But feel free to raise issues.
 
 The terminal UI library is [lipgloss](https://github.com/charmbracelet/lipgloss).
 
