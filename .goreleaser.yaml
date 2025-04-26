@@ -22,7 +22,7 @@ builds:
       - linux
       - windows
       - darwin
-    main: ./cmd/daylight/
+    main: ./main.go
 
 archives:
   - format: tar.gz
