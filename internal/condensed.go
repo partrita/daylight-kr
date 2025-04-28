@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// CondensevedView supports a more succinct display mode
+// CondensedView supports a more succinct display mode
 type CondensedView struct {
 	Rises  string
 	Sets   string

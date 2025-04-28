@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-type exitCode int
+type ExitCode int
 
 const (
-	exitOK  exitCode = 0
-	exitERR exitCode = 1
+	exitOK  ExitCode = 0
+	exitERR ExitCode = 1
 )
 
 // DaylightQuery is an obj representing a user's "request"
@@ -23,7 +23,7 @@ type DaylightQuery struct {
 	Condensed bool
 }
 
-func Daylight() exitCode {
+func Daylight() ExitCode {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -80,7 +80,7 @@ func Daylight() exitCode {
 	return exitOK
 }
 
-func fatal(err error) exitCode {
+func fatal(err error) ExitCode {
 	log.Printf("%s\n", err)
 	return exitERR
 }

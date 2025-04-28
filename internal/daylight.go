@@ -105,23 +105,6 @@ func SunTimesForPlaceDate(latlong LatLong, date time.Time) SunTimes {
 	}
 }
 
-func SunTimesYesterday(latlong LatLong, today time.Time) SunTimes {
-	yesterday := today.AddDate(0, 0, -1)
-	return SunTimesForPlaceDate(latlong, yesterday)
-}
-
-func SunTimesForward(latlong LatLong, today time.Time, count int) ([]time.Time, []SunTimes) {
-	projections := make([]SunTimes, count)
-	dates := make([]time.Time, count)
-
-	for i := 0; i < count; i++ {
-		date := today.AddDate(0, 0, i+1)
-		dates[i] = date
-		projections[i] = SunTimesForPlaceDate(latlong, date)
-	}
-	return dates, projections
-}
-
 func (s SunTimes) ApproximateNoon() time.Time {
 	return s.Rises.Add(s.Length / 2)
 }

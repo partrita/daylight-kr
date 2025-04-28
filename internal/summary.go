@@ -4,7 +4,7 @@ import (
 	"strconv"
 )
 
-// Summary supports a more detailed display mode
+// SummaryView supports a more detailed display mode
 type SummaryView struct {
 	Lat           string
 	Lng           string
@@ -52,7 +52,7 @@ func Summary(query DaylightQuery) SummaryView {
 
 	projectedDates := make([]DayProjection, 10)
 	for i := range 10 {
-		date := query.Date.AddDate(0, 0, 1 + i)
+		date := query.Date.AddDate(0, 0, 1+i)
 		sunTimes := SunTimesForPlaceDate(
 			location,
 			date,

@@ -21,7 +21,7 @@ func (args *Arguments) ReadFromCLI() {
 	arg.MustParse(args)
 }
 
-// Config() turns an Arguments obj into a Config, performing validation
+// Config turns an Arguments obj into an internal.Config, performing validation
 func (args *Arguments) Config() (cfg Config, err error) {
 	if (args.Latitude == nil) != (args.Longitude == nil) {
 		return cfg, fmt.Errorf("--latitude and --longitude must both be set, if used")
@@ -46,11 +46,11 @@ func (args *Arguments) Config() (cfg Config, err error) {
 	}
 
 	if args.Date != nil {
-		time, err := time.Parse(time.DateOnly, *args.Date)
+		date, err := time.Parse(time.DateOnly, *args.Date)
 		if err != nil {
 			return cfg, fmt.Errorf("--date was not a valid date")
 		}
-		cfg.ForDate = &time
+		cfg.ForDate = &date
 	}
 
 	if args.Short != nil {
