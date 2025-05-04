@@ -122,9 +122,8 @@ Change: +3m 39s
 
 ## Codebase
 
-I wrote this project to learn Go, so don't expect anything too amazing.
-
-It is probably not in a state to receive pull requests. But feel free to raise issues.
+This project comes from pretty early in my journey to learn Go. It's always possible there are bugs.
+Feel free to raise issues.
 
 The terminal UI library is [lipgloss](https://github.com/charmbracelet/lipgloss).
 
