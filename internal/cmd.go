@@ -41,7 +41,8 @@ func Daylight() ExitCode {
 
 	// If we are missing data, make request to IPInfo
 	// Otherwise we can run in "offline mode"
-	if config.MissingFields() != nil {
+	offline := config.MissingFields() == nil
+	if !offline {
 		ipInfo, err := FetchIPInfo()
 		if err != nil {
 			return fatal(err)
@@ -53,8 +54,6 @@ func Daylight() ExitCode {
 		}
 
 		config.FillValues(configFromAPI)
-	} else {
-		fmt.Print(Offline())
 	}
 
 	// Sanity check - this should never fail, but...
@@ -73,6 +72,9 @@ func Daylight() ExitCode {
 		return exitOK
 	}
 
+	if offline {
+		fmt.Print(Offline())
+	}
 	viewmodel := Summary(query)
 	formatted := viewmodel.FormatString()
 	fmt.Print(formatted)
