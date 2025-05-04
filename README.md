@@ -47,6 +47,9 @@ daylight --latitude="-33.92" --longitude="18.42" --timezone="Africa/Johannesburg
 # Short summary of the data
 daylight --short
 
+# JSON version of summary
+daylight --json
+
 # Data for another date
 daylight --date="2025-12-31"
 

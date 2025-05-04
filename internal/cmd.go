@@ -21,6 +21,7 @@ type DaylightQuery struct {
 	Date      time.Time
 	IP        string
 	Condensed bool
+	Json      bool
 }
 
 func Daylight() ExitCode {
@@ -63,6 +64,17 @@ func Daylight() ExitCode {
 	}
 
 	query := config.DaylightQuery()
+
+	if query.Json {
+		viewmodel := JsonSummary(query)
+		formatted, err := viewmodel.FormatString()
+		if err != nil {
+			return fatal(err)
+		}
+		fmt.Println(formatted)
+
+		return exitOK
+	}
 
 	if query.Condensed {
 		viewmodel := Condensed(query)

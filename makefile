@@ -29,6 +29,8 @@ test-manual: clean build
 	./build/daylight --date="2025-02-03" --latitude="-33.92" --longitude 18.42 --timezone "Africa/Johannesburg"
 	echo "=====[TEST NOCOLOR]====="
 	NO_COLOR=true ./build/daylight
+	echo "=====[TEST JSON MODE]====="
+	./build/daylight --json
 	echo "=====[TEST HERE/NOW]====="
 	./build/daylight
 

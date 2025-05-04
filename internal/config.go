@@ -12,6 +12,7 @@ type Config struct {
 	Timezone  *time.Location
 	ForDate   *time.Time
 	Condensed *bool
+	Json      *bool
 	IP        *string
 }
 
@@ -26,7 +27,7 @@ func (cfg *Config) MissingFields() error {
 	if cfg.Timezone == nil {
 		return errors.New("missing Timezone data")
 	}
-	// Others (forDate, condensed, ip) can be defaulted
+	// Others (forDate, condensed, json, ip) can be defaulted
 
 	return nil
 }
@@ -43,6 +44,10 @@ func (cfg *Config) DaylightQuery() DaylightQuery {
 		val := false
 		cfg.Condensed = &val
 	}
+	if cfg.Json == nil {
+		val := false
+		cfg.Json = &val
+	}
 	if cfg.IP == nil {
 		val := "n/a"
 		cfg.IP = &val
@@ -58,6 +63,7 @@ func (cfg *Config) DaylightQuery() DaylightQuery {
 		Date:      *cfg.ForDate,
 		IP:        *cfg.IP,
 		Condensed: *cfg.Condensed,
+		Json:      *cfg.Json,
 	}
 }
 
@@ -77,6 +83,9 @@ func (cfg *Config) FillValues(cfg2 Config) {
 	}
 	if cfg.Condensed == nil {
 		cfg.Condensed = cfg2.Condensed
+	}
+	if cfg.Json == nil {
+		cfg.Json = cfg2.Json
 	}
 	if cfg.IP == nil {
 		cfg.IP = cfg2.IP

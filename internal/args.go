@@ -14,6 +14,7 @@ type Arguments struct {
 	Timezone  *string  `help:"Timezone in IANA format e.g. 'Europe/London'"`
 	Date      *string  `help:"Date in YYYY-MM-DD"`
 	Short     *bool    `help:"Show in condensed format"`
+	Json      *bool    `help:"Short JSON output"`
 }
 
 // ReadFromCLI reads command line flags into Arguments
@@ -55,6 +56,10 @@ func (args *Arguments) Config() (cfg Config, err error) {
 
 	if args.Short != nil {
 		cfg.Condensed = args.Short
+	}
+
+	if args.Json != nil {
+		cfg.Json = args.Json
 	}
 
 	return cfg, nil
