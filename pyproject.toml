@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daylight-py"
+version = "0.1.0"
+description = "Python port of the Daylight CLI tool for sunrise/sunset times."
+readme = "README.md"
+requires-python = ">=3.7"
+license = { file = "LICENSE" } # Assuming LICENSE file from original repo is kept
+authors = [
+  { name = "Your Name / AI Agent", email = "you@example.com" } # Placeholder
+]
+keywords = ["sunrise", "sunset", "daylight", "cli", "weather"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)", # Match original if applicable
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "requests",
+    "pytz",
+    "astral>=3.0", # astral 3.0 has some API changes from v2
+]
+
+[project.scripts]
+daylight-py = "main:main"
+
+[project.optional-dependencies]
+test = [
+    "unittest-xml-reporting", # Example if XML reports are needed
+    # "pytest", # If using pytest as a test runner
+]
