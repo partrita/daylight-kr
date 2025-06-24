@@ -1,17 +1,11 @@
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "daylight-py"
+name = "daylight-kr"
 version = "0.1.0"
 description = "Python port of the Daylight CLI tool for sunrise/sunset times."
 readme = "README.md"
-requires-python = ">=3.7"
+authors = [{ name = "deepthought", email = "deepthough@postech.ac.kr" }]
+requires-python = ">=3.11"
 license = { file = "LICENSE" } # Assuming LICENSE file from original repo is kept
-authors = [
-  { name = "Your Name / AI Agent", email = "you@example.com" } # Placeholder
-]
 keywords = ["sunrise", "sunset", "daylight", "cli", "weather"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -26,7 +20,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Topic :: Utilities",
 ]
-
 dependencies = [
     "requests",
     "pytz",
@@ -34,10 +27,17 @@ dependencies = [
 ]
 
 [project.scripts]
-daylight-py = "main:main"
+daylight = "daylight_py:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/daylight_py"]
 
 [project.optional-dependencies]
 test = [
     "unittest-xml-reporting", # Example if XML reports are needed
-    # "pytest", # If using pytest as a test runner
+    "pytest",                 # If using pytest as a test runner
 ]
