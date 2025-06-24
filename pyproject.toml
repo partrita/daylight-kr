@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.scripts]
-daylight = "daylight_py:main"
+daylight = "daylight_py.main:main"
 
 [build-system]
 requires = ["hatchling"]
