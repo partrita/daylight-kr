@@ -133,15 +133,6 @@ def create_full_output(
     lines.append("")
 
     # Progress bar
-    # The original bar is complex. This is a simplification.
-    # 'R' for rise, 'S' for set, '-' for daylight, '.' for night.
-    # Example: ......R-------------------S......
-    # This requires knowing the proportion of the day.
-    # The bar in the Go app is 45 chars " .................R-------------------------------------------S........... "
-    # Total bar width in example is 60.
-
-    # For simplicity, let's use a fixed width bar for now.
-    # The original seems to have a marker for current time too, which is out of scope for now.
     progress_bar_width = 60 # Match example
     if sun_times_today.length is not None:
         day_seconds = sun_times_today.length.total_seconds()
@@ -170,13 +161,11 @@ def create_full_output(
     col_len_w = 20  # "14 hrs, 47 mins"
 
     header_fmt = f"│ {{:<{col_date_w}}} │ {{:^{col_rise_w}}} │ {{:^{col_set_w}}} │ {{:^{col_len_w}}} │"
-    top_border = f"┌{'─'*col_date_w}┬{'─'*col_rise_w}┬{'─'*col_set_w}┬{'─'*col_len_w}┐"
-    separator_row = f"├{'─'*col_date_w}┼{'─'*col_rise_w}┼{'─'*col_set_w}┼{'─'*col_len_w}┤"
-    bottom_border = f"└{'─'*col_date_w}┴{'─'*col_rise_w}┴{'─'*col_set_w}┴{'─'*col_len_w}┘"
 
-    lines.append(top_border.center(TERMINAL_WIDTH).rstrip())
-    lines.append(header_fmt.format("DATE", "SUNRISE", "SUNSET", "LENGTH").center(TERMINAL_WIDTH).rstrip())
-    lines.append(separator_row.center(TERMINAL_WIDTH).rstrip())
+    # Calculate the total table width to center it properly
+    table_width = col_date_w + col_rise_w + col_set_w + col_len_w + (3 * 3) + 2 # Columns + pipes + spaces + outer borders
+
+    lines.append(header_fmt.format("DATE", "SUNRISE", "SUNSET", "LENGTH").center(TERMINAL_WIDTH)) # Center the whole header
 
     for proj_date, proj_st in ten_day_projection:
         date_str = proj_date.strftime("%a %b %d") # e.g., Sun Apr 27
@@ -190,9 +179,8 @@ def create_full_output(
             set_str = format_time_optional_hm(proj_st.sets)
             len_str = format_timedelta_hm(proj_st.length)
 
-        lines.append(header_fmt.format(date_str, rise_str, set_str, len_str).center(TERMINAL_WIDTH).rstrip())
+        lines.append(header_fmt.format(date_str, rise_str, set_str, len_str).center(TERMINAL_WIDTH)) # Center the whole row
 
-    lines.append(bottom_border.center(TERMINAL_WIDTH).rstrip())
     lines.append("")
 
     # Your stats
@@ -208,7 +196,6 @@ def create_full_output(
         lines.append(f"{loc_str:<{TERMINAL_WIDTH // 2 + 5}}{ip_str:>{TERMINAL_WIDTH - (TERMINAL_WIDTH // 2 + 5)}}") # Give a bit more to location
         lines.append("")
 
-    lines.append("https://github.com/jbreckmckye/daylight (Original Go version)".center(TERMINAL_WIDTH)) # Or new Python repo
     lines.append("") # Final spacer
 
     return "\n".join(lines)
