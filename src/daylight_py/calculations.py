@@ -8,7 +8,16 @@ class SunTimes:
         self.rises = rises
         self.sets = sets
         self.noon = noon
-        self.length = length
+        # Ensure length is always a timedelta, defaulting to zero if None is passed.
+        if length is None:
+            self.length = datetime.timedelta(0)
+        elif not isinstance(length, datetime.timedelta):
+            # Fallback if a non-timedelta type is somehow passed (though unlikely from get_sun_times)
+            self.length = datetime.timedelta(0)
+            # Optionally, log a warning here if logging facility was available
+            # print(f"Warning: SunTimes received non-timedelta length: {length}", file=sys.stderr)
+        else:
+            self.length = length
         self.polar_night = polar_night
         self.polar_day = polar_day
         self.timezone = timezone # Store timezone for consistent output

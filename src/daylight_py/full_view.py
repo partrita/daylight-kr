@@ -40,26 +40,77 @@ def format_timedelta_change(delta, default_val="N/A"):
     seconds = total_seconds % 60
     return f"{sign}{minutes}m {seconds}s"
 
-def render_progress_bar(day_length_seconds, total_seconds_in_day=24*60*60, bar_width=60):
-    """Renders a simple text progress bar for daylight."""
-    if day_length_seconds is None or day_length_seconds < 0:
-        return "." * bar_width
+def render_progress_bar_new(
+    current_time_local: datetime.datetime,
+    sunrise_local: datetime.datetime | None,
+    sunset_local: datetime.datetime | None,
+    polar_day: bool,
+    polar_night: bool,
+    bar_width: int = 60
+):
+    """Renders a text progress bar indicating current time relative to daylight."""
 
-    filled_proportion = day_length_seconds / total_seconds_in_day
-    filled_length = int(filled_proportion * bar_width)
+    minutes_in_day = 24 * 60
+    # Handle potential division by zero if bar_width is 0, though unlikely.
+    minutes_per_char = minutes_in_day / bar_width if bar_width > 0 else minutes_in_day
 
-    # Simplified representation: R for rise, S for set, - for light, . for dark
-    # This is a very rough approximation and doesn't show actual sun position.
-    if filled_length == 0: # Polar night
-        return "." * bar_width
-    if filled_length >= bar_width: # Polar day
-        return "R" + ("-" * (bar_width - 2)) + "S" if bar_width > 1 else "-" * bar_width
+    def get_char_pos(dt_obj: datetime.datetime | None) -> int | None:
+        if dt_obj is None:
+            return None
+        time_in_minutes = dt_obj.hour * 60 + dt_obj.minute
+        # Ensure pos is an int and within bounds
+        pos = int(time_in_minutes / minutes_per_char) if minutes_per_char > 0 else 0
+        return min(max(pos, 0), bar_width - 1 if bar_width > 0 else 0)
 
-    bar = "R"
-    bar += "-" * (filled_length - 2 if filled_length > 1 else 0)
-    bar += "S"
-    bar += "." * (bar_width - filled_length -1) # -1 for the S
-    return bar[:bar_width]
+    current_pos = get_char_pos(current_time_local) if current_time_local else None
+
+    bar_chars = ['.'] * bar_width
+
+    if polar_day:
+        bar_chars = ['-'] * bar_width
+        if bar_width > 0: bar_chars[0] = 'R'
+        if bar_width > 1: bar_chars[bar_width - 1] = 'S'
+    elif polar_night:
+        pass # Already all '.'
+    elif sunrise_local and sunset_local:
+        sunrise_pos = get_char_pos(sunrise_local)
+        sunset_pos = get_char_pos(sunset_local)
+
+        if sunrise_pos is not None and sunset_pos is not None:
+            # Fill daylight part
+            # This logic assumes sunrise_pos <= sunset_pos for a typical day.
+            # More complex scenarios (e.g. sun sets before it rises on a given date due to polar effects)
+            # are simplified here. Astral provides events for the given date.
+            start_char = min(sunrise_pos, sunset_pos)
+            end_char = max(sunrise_pos, sunset_pos)
+
+            # If sunrise is after sunset (e.g. for southern hemisphere summer, date chosen is winter for north)
+            # this means it's mostly dark, or light spans across midnight.
+            # For this bar, we simplify: if sun rises and sets on this date, show that span as light.
+            if sunrise_local < sunset_local: # Normal case: sun rises then sets
+                 for i in range(sunrise_pos, sunset_pos + 1):
+                    if 0 <= i < bar_width:
+                        bar_chars[i] = '-'
+            else: # Sun sets then rises (e.g. daylight spans midnight)
+                for i in range(0, sunset_pos + 1): # From start of day to sunset
+                    if 0 <= i < bar_width: bar_chars[i] = '-'
+                for i in range(sunrise_pos, bar_width): # From sunrise to end of day
+                     if 0 <= i < bar_width: bar_chars[i] = '-'
+
+            # Place R and S
+            if 0 <= sunrise_pos < bar_width: bar_chars[sunrise_pos] = 'R'
+            if 0 <= sunset_pos < bar_width: bar_chars[sunset_pos] = 'S'
+            # If R and S are at the same spot, S takes precedence if it's different from R.
+            # This case is rare (extremely short day/night).
+            if sunrise_pos == sunset_pos and 0 <= sunrise_pos < bar_width:
+                 bar_chars[sunrise_pos] = '*' # Indicate both rise and set at same char
+
+    # Place 'C' for current time, potentially overwriting R/S if at the same char position
+    if current_pos is not None and 0 <= current_pos < bar_width:
+        bar_chars[current_pos] = 'C'
+
+    if not bar_chars: return "?" * bar_width # Should not happen if bar_width > 0
+    return "".join(bar_chars)
 
 
 def create_full_output(
@@ -68,7 +119,8 @@ def create_full_output(
     sun_times_yesterday: SunTimes,
     ten_day_projection: list, # List of (date, SunTimes) tuples
     ip_info: dict = None, # {'ip': '...', 'latitude': ..., 'longitude': ...}
-    offline_mode: bool = False
+    offline_mode: bool = False,
+    current_time_utc: datetime.datetime | None = None # Added parameter
 ):
     """
     Generates the full text output for daylight information.
@@ -134,15 +186,36 @@ def create_full_output(
 
     # Progress bar
     progress_bar_width = 60 # Match example
-    if sun_times_today.length is not None:
-        day_seconds = sun_times_today.length.total_seconds()
-        bar_str = render_progress_bar(day_seconds, bar_width=progress_bar_width)
-    elif sun_times_today.polar_day:
-        bar_str = "R" + ("-" * (progress_bar_width - 2)) + "S" if progress_bar_width > 1 else "-" * progress_bar_width
-    elif sun_times_today.polar_night:
-        bar_str = "." * progress_bar_width
+    bar_str = ""
+    if current_time_utc and sun_times_today.timezone:
+        current_time_local = current_time_utc.astimezone(sun_times_today.timezone)
+
+        # The progress bar should reflect the timeline of the query_date,
+        # but the 'C' marker should be based on the current time's time of day.
+        # So, we set current_time_local's date part to query_date for positioning 'C'
+        # correctly on the historical/future bar.
+        # However, the spirit of "current time" is NOW, so we use actual current_time_local.
+        # The bar represents the day specified by query_date.
+        # 'C' shows where "now" is on such a day's timeline.
+
+        bar_str = render_progress_bar_new(
+            current_time_local=current_time_local, # Actual current time, localized
+            sunrise_local=sun_times_today.rises,    # This is for query_date
+            sunset_local=sun_times_today.sets,      # This is for query_date
+            polar_day=sun_times_today.polar_day,
+            polar_night=sun_times_today.polar_night,
+            bar_width=progress_bar_width
+        )
     else:
-        bar_str = "?" * progress_bar_width # Unknown state
+        # Fallback or if current_time_utc is not provided (should not happen with app.py changes)
+        # Or if timezone info is missing from sun_times_today (also unlikely)
+        if sun_times_today.polar_day:
+            bar_str = "R" + ("-" * (progress_bar_width - 2)) + "S" if progress_bar_width > 1 else "-" * progress_bar_width
+        elif sun_times_today.polar_night:
+            bar_str = "." * progress_bar_width
+        else: # Could try to use the old bar if length is available, but ? is safer if C cannot be shown
+            bar_str = "?" * progress_bar_width
+
     lines.append(bar_str.center(TERMINAL_WIDTH))
     lines.append("")
 

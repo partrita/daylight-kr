@@ -173,16 +173,20 @@ def main():
             }
 
         print(
-            create_full_output(
-                query_date=target_date,
-                sun_times_today=sun_times_today,
-                sun_times_yesterday=sun_times_yesterday,
-                ten_day_projection=ten_day_projection_data,
-                ip_info=ip_info_for_full,
-                offline_mode=offline_mode
-                and not ip_address_val,  # Truly offline if no IP was fetched
+            # Get current time in UTC to pass to the view for the progress bar
+            current_time_utc = datetime.datetime.now(pytz.utc)
+            print(
+                create_full_output(
+                    query_date=target_date,
+                    sun_times_today=sun_times_today,
+                    sun_times_yesterday=sun_times_yesterday,
+                    ten_day_projection=ten_day_projection_data,
+                    ip_info=ip_info_for_full,
+                    offline_mode=offline_mode
+                    and not ip_address_val,  # Truly offline if no IP was fetched
+                    current_time_utc=current_time_utc,
+                )
             )
-        )
 
 
 if __name__ == "__main__":
