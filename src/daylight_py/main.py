@@ -1,13 +1,16 @@
 import argparse
 import datetime
-import sys  # <--- MOVE THIS HERE
-import pytz  # <--- MOVE THIS HERE
-from daylight_py.ipinfo import fetch_ip_info, IPInfoError  # <--- MOVE THIS HERE
-from daylight_py.calculations import get_sun_times  # <--- MOVE THIS HERE
-from daylight_py.json_view import create_json_output  # <--- MOVE THIS HERE
-from daylight_py.condensed_view import create_condensed_output  # <--- MOVE THIS HERE
-from daylight_py.full_view import create_full_output  # <--- MOVE THIS HERE
+import sys
+import pytz
+from rich.console import Console  # Rich 콘솔 임포트
+from daylight_py.ipinfo import fetch_ip_info, IPInfoError
+from daylight_py.calculations import get_sun_times
+from daylight_py.json_view import create_json_output
+from daylight_py.condensed_view import create_condensed_output
+from daylight_py.full_view import create_full_output
 
+# Rich 콘솔 객체 초기화
+console = Console()
 
 def main():
     parser = argparse.ArgumentParser(
@@ -76,7 +79,7 @@ def main():
 
     if not offline_mode:
         try:
-            print("Fetching IP information...", file=sys.stderr)
+            console.print("Fetching IP information...", style="dim")
             ip_data = fetch_ip_info()
             ip_address_val = ip_data["ip"]
             if latitude is None:  # Prioritize CLI args for lat/long
@@ -85,22 +88,22 @@ def main():
                 longitude = ip_data["longitude"]
             if timezone_pytz is None:  # Prioritize CLI arg for TZ
                 timezone_pytz = pytz.timezone(ip_data["timezone"]) # Corrected: pytz.timezone
-            print(
-                f"Using: Lat={latitude:.2f}, Lon={longitude:.2f}, TZ={timezone_pytz.zone}",
-                file=sys.stderr,
+            console.print(
+                f"Using: Lat=[bold]{latitude:.2f}[/], Lon=[bold]{longitude:.2f}[/], TZ=[bold]{timezone_pytz.zone}[/]",
+                style="dim"
             )
         except IPInfoError as e:
-            print(f"Error fetching IP information: {e}", file=sys.stderr)
+            console.print(f"Error fetching IP information: {e}", style="bold red")
             if latitude is None or longitude is None or timezone_pytz is None:
-                print(
+                console.print(
                     "Could not determine location. Please provide --latitude, --longitude, and --timezone, or ensure internet connectivity.",
-                    file=sys.stderr,
+                    style="bold red",
                 )
                 sys.exit(1)
             else:
-                print(
+                console.print(
                     "Proceeding with user-provided location data (if any).",
-                    file=sys.stderr,
+                    style="yellow dim",
                 )
                 offline_mode = (
                     True  # Attempt to run offline if we have enough manual args
@@ -108,13 +111,13 @@ def main():
 
     # Final check if we have all necessary info
     if latitude is None or longitude is None or timezone_pytz is None:
-        print(
+        console.print(
             "Error: Missing location information (latitude, longitude, or timezone).",
-            file=sys.stderr,
+            style="bold red",
         )
-        print(
+        console.print(
             "Please provide them as arguments or ensure IP-based lookup can succeed.",
-            file=sys.stderr,
+            style="red",
         )
         sys.exit(1)
 
@@ -128,15 +131,17 @@ def main():
             latitude, longitude, yesterday_date, timezone_pytz
         )
     except Exception as e:
-        print(f"Error calculating sun times: {e}", file=sys.stderr)
+        console.print(f"Error calculating sun times: {e}", style="bold red")
         sys.exit(1)
 
     # --- Output ---
     if args.json:
+        # JSON output should remain plain, not using Rich console for the JSON string itself
         ip_info_for_json = {"latitude": latitude, "longitude": longitude}
         if ip_address_val:
             ip_info_for_json["ip"] = ip_address_val
 
+        # We use standard print for JSON as it's machine-readable
         print(
             create_json_output(
                 target_date,
@@ -147,7 +152,7 @@ def main():
             )
         )
     elif args.short:
-        print(create_condensed_output(sun_times_today, sun_times_yesterday))
+        console.print(create_condensed_output(sun_times_today, sun_times_yesterday))
     else:  # Full output
         ten_day_projection_data = []
         for i in range(1, 11):
@@ -156,9 +161,9 @@ def main():
                 proj_st = get_sun_times(latitude, longitude, proj_date, timezone_pytz)
                 ten_day_projection_data.append((proj_date, proj_st))
             except Exception as e:
-                print(
+                console.print(
                     f"Warning: Could not calculate sun times for {proj_date}: {e}",
-                    file=sys.stderr,
+                    style="yellow",
                 )
                 # Add a placeholder or skip? For now, skip.
 
@@ -168,16 +173,16 @@ def main():
                 "ip": ip_address_val,
                 "latitude": latitude,
                 "longitude": longitude,
-                "timezone": timezone_pytz.zone,
+                "timezone": timezone_pytz, # Pass the pytz object itself
             }
         elif offline_mode:  # Show location if offline but no IP
             ip_info_for_full = {
                 "latitude": latitude,
                 "longitude": longitude,
-                "timezone": timezone_pytz.zone,
+                "timezone": timezone_pytz, # Pass the pytz object itself
             }
 
-        print(
+        console.print(
             create_full_output(
                 query_date=target_date,
                 sun_times_today=sun_times_today,

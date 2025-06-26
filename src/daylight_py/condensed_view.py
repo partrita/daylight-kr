@@ -1,4 +1,6 @@
 import datetime
+from rich.panel import Panel
+from rich.text import Text
 from .calculations import SunTimes # Assuming SunTimes is in calculations.py
 
 def format_time_optional_hm(dt_obj):
@@ -19,20 +21,20 @@ def format_timedelta_to_hm_str(delta):
 
 def create_condensed_output(sun_times_today: SunTimes, sun_times_yesterday: SunTimes):
     """
-    Generates a condensed string summary of daylight information.
+    Generates a Rich Panel object with a condensed summary of daylight information.
     """
-    lines = []
+    content = Text()
 
     if sun_times_today.polar_day:
-        lines.append("Polar Day")
-        lines.append(f"Length: {format_timedelta_to_hm_str(sun_times_today.length)}")
+        content.append("Polar Day\n", style="bold yellow")
+        content.append(f"Length: {format_timedelta_to_hm_str(sun_times_today.length)}")
     elif sun_times_today.polar_night:
-        lines.append("Polar Night")
-        lines.append(f"Length: {format_timedelta_to_hm_str(sun_times_today.length)}")
+        content.append("Polar Night\n", style="bold blue")
+        content.append(f"Length: {format_timedelta_to_hm_str(sun_times_today.length)}")
     else:
-        lines.append(f"Rises:  {format_time_optional_hm(sun_times_today.rises)}")
-        lines.append(f"Sets:   {format_time_optional_hm(sun_times_today.sets)}")
-        lines.append(f"Length: {format_timedelta_to_hm_str(sun_times_today.length)}")
+        content.append(Text.assemble(("Rises:  ", "bold"), f"{format_time_optional_hm(sun_times_today.rises)}\n"))
+        content.append(Text.assemble(("Sets:   ", "bold"), f"{format_time_optional_hm(sun_times_today.sets)}\n"))
+        content.append(Text.assemble(("Length: ", "bold"), f"{format_timedelta_to_hm_str(sun_times_today.length)}"))
 
     # Calculate change in day length
     if sun_times_today.length is not None and sun_times_yesterday.length is not None:
@@ -41,12 +43,14 @@ def create_condensed_output(sun_times_today: SunTimes, sun_times_yesterday: SunT
         sign = "+" if total_seconds >= 0 else "-"
         total_seconds = abs(total_seconds)
         minutes = total_seconds // 60
-        seconds = total_seconds % 60 # Original Go app shows minutes and seconds for change
-        lines.append(f"Change: {sign}{minutes}m {seconds}s")
+        seconds = total_seconds % 60
+        change_str = f"{sign}{minutes}m {seconds}s"
+        style = "green" if sign == "+" else "red" if sign == "-" else ""
+        content.append(Text.assemble(("\nChange: ", "bold"), (change_str, style)))
     else:
-        lines.append("Change: N/A")
+        content.append(Text.assemble(("\nChange: ", "bold"), "N/A"))
 
-    return "\n".join(lines)
+    return Panel(content, title="[b]Daylight Summary[/b]", border_style="sky_blue1", expand=False)
 
 if __name__ == '__main__':
     # Example Usage
@@ -62,8 +66,8 @@ if __name__ == '__main__':
     st_today_london = get_sun_times(51.5074, 0.1278, today_date, tz_london)
     st_yesterday_london = get_sun_times(51.5074, 0.1278, yesterday_date, tz_london)
 
-    print("--- Condensed Output (London) ---")
-    print(create_condensed_output(st_today_london, st_yesterday_london))
+    console.print("--- Condensed Output (London) ---")
+    console.print(create_condensed_output(st_today_london, st_yesterday_london))
 
     # Tromsø example (Polar Night in December)
     tz_tromso_str = "Europe/Oslo"
@@ -74,8 +78,8 @@ if __name__ == '__main__':
     st_today_tromso_winter = get_sun_times(69.6492, 18.9553, dec_21, tz_tromso)
     st_yesterday_tromso_winter = get_sun_times(69.6492, 18.9553, dec_20, tz_tromso)
 
-    print("\n--- Condensed Output (Tromsø Winter - Polar Night) ---")
-    print(create_condensed_output(st_today_tromso_winter, st_yesterday_tromso_winter))
+    console.print("\n--- Condensed Output (Tromsø Winter - Polar Night) ---")
+    console.print(create_condensed_output(st_today_tromso_winter, st_yesterday_tromso_winter))
 
     # Tromsø example (Polar Day in June)
     jun_21 = datetime.date(2024, 6, 21)
@@ -83,5 +87,5 @@ if __name__ == '__main__':
     st_today_tromso_summer = get_sun_times(69.6492, 18.9553, jun_21, tz_tromso)
     st_yesterday_tromso_summer = get_sun_times(69.6492, 18.9553, jun_20, tz_tromso)
 
-    print("\n--- Condensed Output (Tromsø Summer - Polar Day) ---")
-    print(create_condensed_output(st_today_tromso_summer, st_yesterday_tromso_summer))
+    console.print("\n--- Condensed Output (Tromsø Summer - Polar Day) ---")
+    console.print(create_condensed_output(st_today_tromso_summer, st_yesterday_tromso_summer))

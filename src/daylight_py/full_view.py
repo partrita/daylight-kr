@@ -1,8 +1,15 @@
 import datetime
-from .calculations import SunTimes # Assuming SunTimes is in calculations.py
+from .calculations import SunTimes
+from rich.console import Group
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+from rich.progress_bar import ProgressBar
+from rich.align import Align
+from rich.rule import Rule
 
-# Width for formatting, can be adjusted
-TERMINAL_WIDTH = 80
+# TERMINAL_WIDTH can be dynamic with Rich, but we might use it for some fixed calculations if needed.
+# However, Rich components often handle width automatically or via their own width parameters.
 
 def format_time_optional_hm(dt_obj, default_val="--:--"):
     """Formats a datetime object to HH:MM, or returns default_val if dt_obj is None."""
@@ -59,6 +66,9 @@ def render_progress_bar(day_length_seconds, total_seconds_in_day=24*60*60, bar_w
     bar += "-" * (filled_length - 2 if filled_length > 1 else 0)
     bar += "S"
     bar += "." * (bar_width - filled_length -1) # -1 for the S
+    # This function is not directly used by Rich progress bar but can be kept for reference
+    # or if a custom text-based bar is still desired somewhere.
+    # Rich's ProgressBar will handle its own rendering.
     return bar[:bar_width]
 
 
@@ -69,136 +79,114 @@ def create_full_output(
     ten_day_projection: list, # List of (date, SunTimes) tuples
     ip_info: dict = None, # {'ip': '...', 'latitude': ..., 'longitude': ...}
     offline_mode: bool = False
-):
+) -> Group:
     """
-    Generates the full text output for daylight information.
+    Generates a Rich Group object containing the full daylight information,
+    formatted with Rich components like Panel, Table, ProgressBar.
     """
-    lines = []
-    separator = "═" * TERMINAL_WIDTH
+    renderables = []
 
     # Header
     if offline_mode:
-        lines.append("Offline Mode".center(TERMINAL_WIDTH))
-    lines.append("Today's daylight".center(TERMINAL_WIDTH))
-    lines.append(separator)
-    lines.append("") # Spacer
+        renderables.append(Align.center(Text("Offline Mode", style="bold yellow")))
+
+    renderables.append(Align.center(Text(f"Today's daylight ({query_date.strftime('%Y-%m-%d')})", style="bold cyan")))
+    renderables.append(Rule(style="cyan"))
 
     # Today's sun times
+    today_times_text = Text(justify="center")
     if sun_times_today.polar_day:
-        lines.append("POLAR DAY (Sun is up all day)".center(TERMINAL_WIDTH))
+        today_times_text.append("POLAR DAY\n(Sun is up all day)", style="bold yellow")
     elif sun_times_today.polar_night:
-        lines.append("POLAR NIGHT (Sun is down all day)".center(TERMINAL_WIDTH))
+        today_times_text.append("POLAR NIGHT\n(Sun is down all day)", style="bold blue")
     else:
         rises_str = format_time_optional_hm(sun_times_today.rises)
         noon_str = format_time_optional_hm(sun_times_today.noon)
         sets_str = format_time_optional_hm(sun_times_today.sets)
+        today_times_text.append(Text.assemble(
+            ("Rises: ", "bold"), (rises_str, "green"), "  ",
+            ("Noon: ", "bold"), (noon_str, "yellow"), "  ",
+            ("Sets: ", "bold"), (sets_str, "magenta")
+        ))
+    renderables.append(Align.center(today_times_text))
+    renderables.append("") # Spacer
 
-        # Try to somewhat align these: Rises, Noon, Sets
-        # Max label length is "Rises: " = 7. Max time length is "00:00" = 5
-        # Field width could be dynamic, or fixed. Let's try semi-fixed for now.
-        # Total width: 80. Space for 3 items + labels.
-        # Approx 26 chars per item block.
-        # Label (7) + Time (5) = 12. Remaining 14 for spacing.
-        # "Rises: HH:MM Noon: HH:MM Sets: HH:MM"
-
-        line = f"{'Rises:':<10}{rises_str:<6}"
-        line += f"{'Noon:':^20}{noon_str:^6}" # Centered noon
-        line += f"{'Sets:':>16}{sets_str:>6}" # Right aligned sets
-        # This alignment is tricky without knowing exact spacing of original.
-        # A simpler approach:
-        line1_today = f"Rises: {rises_str}".ljust(TERMINAL_WIDTH // 3) + \
-                      f"Noon: {noon_str}".center(TERMINAL_WIDTH // 3) + \
-                      f"Sets: {sets_str}".rjust(TERMINAL_WIDTH // 3)
-        lines.append(line1_today.center(TERMINAL_WIDTH).rstrip())
-
-
-    lines.append("") # Spacer
-
-    # Day length
-    lines.append("Day length".center(TERMINAL_WIDTH))
-    lines.append(separator)
-    lines.append("")
-
+    # Day length panel
     length_today_str = format_timedelta_hm(sun_times_today.length)
-    change_str = format_timedelta_change(sun_times_today.length - sun_times_yesterday.length if sun_times_today.length is not None and sun_times_yesterday.length is not None else None)
+    change_val = sun_times_today.length - sun_times_yesterday.length if sun_times_today.length is not None and sun_times_yesterday.length is not None else None
+    change_str = format_timedelta_change(change_val)
 
-    line_len1 = f"Daylight for: {length_today_str}"
-    line_len2 = f"versus yesterday: {change_str}"
+    change_style = "green" if change_val and change_val.total_seconds() >= 0 else "red" if change_val else ""
 
-    # Simple two-column layout
-    # Max length of "Daylight for: XX hrs, YY mins" vs "versus yesterday: +XXm YYs"
-    # Let's give half width to each roughly
-    half_width = TERMINAL_WIDTH // 2
-    lines.append(f"{line_len1:<{half_width}}{line_len2:>{TERMINAL_WIDTH - half_width}}")
-    lines.append("")
+    day_length_content = Text.assemble(
+        ("Daylight for: ", "bold"), (length_today_str, "bold orange1"), "\n",
+        ("Versus yesterday: ", "bold"), (change_str, f"bold {change_style}")
+    )
+    renderables.append(Panel(Align.center(day_length_content), title="[b]Day Length[/b]", border_style="green", expand=False))
+    renderables.append("")
 
-    # Progress bar
-    progress_bar_width = 60 # Match example
-    if sun_times_today.length is not None:
-        day_seconds = sun_times_today.length.total_seconds()
-        bar_str = render_progress_bar(day_seconds, bar_width=progress_bar_width)
-    elif sun_times_today.polar_day:
-        bar_str = "R" + ("-" * (progress_bar_width - 2)) + "S" if progress_bar_width > 1 else "-" * progress_bar_width
+
+    # Progress bar for daylight
+    # Total seconds in a day for progress bar calculation
+    total_seconds_in_day = 24 * 60 * 60
+    day_seconds = 0
+    bar_title = "Daylight Progress"
+
+    if sun_times_today.polar_day:
+        day_seconds = total_seconds_in_day
+        bar_title = "Polar Day (24h Daylight)"
     elif sun_times_today.polar_night:
-        bar_str = "." * progress_bar_width
-    else:
-        bar_str = "?" * progress_bar_width # Unknown state
-    lines.append(bar_str.center(TERMINAL_WIDTH))
-    lines.append("")
+        day_seconds = 0
+        bar_title = "Polar Night (0h Daylight)"
+    elif sun_times_today.length is not None:
+        day_seconds = sun_times_today.length.total_seconds()
 
-    # Ten day projection
-    lines.append("Ten day projection".center(TERMINAL_WIDTH))
-    lines.append(separator)
-    lines.append("")
+    # Ensure day_seconds is not negative if length is None for some reason
+    day_seconds = max(0, day_seconds)
 
-    # Table headers
-    # DATE (15) | SUNRISE (9) | SUNSET (9) | LENGTH (18)
-    # Total: 15 + 9 + 9 + 18 + (3*3 pipes+spaces) = 51 + 9 = 60
-    # Let's define column widths
-    col_date_w = 16 # "Wed Apr 30"
-    col_rise_w = 9  # "05:33"
-    col_set_w = 9   # "20:21"
-    col_len_w = 20  # "14 hrs, 47 mins"
+    progress_bar = ProgressBar(total=total_seconds_in_day, completed=day_seconds, width=50) # Rich will manage width better
+    renderables.append(Align.center(Group(Text(bar_title, justify="center"), progress_bar)))
+    renderables.append("")
 
-    header_fmt = f"│ {{:<{col_date_w}}} │ {{:^{col_rise_w}}} │ {{:^{col_set_w}}} │ {{:^{col_len_w}}} │"
 
-    # Calculate the total table width to center it properly
-    table_width = col_date_w + col_rise_w + col_set_w + col_len_w + (3 * 3) + 2 # Columns + pipes + spaces + outer borders
-
-    lines.append(header_fmt.format("DATE", "SUNRISE", "SUNSET", "LENGTH").center(TERMINAL_WIDTH)) # Center the whole header
+    # Ten day projection table
+    projection_table = Table(title="[b]Ten Day Projection[/b]", show_header=True, header_style="bold magenta", border_style="blue")
+    projection_table.add_column("Date", style="dim", width=12, justify="center")
+    projection_table.add_column("Sunrise", justify="center")
+    projection_table.add_column("Sunset", justify="center")
+    projection_table.add_column("Length", justify="center", style="green")
 
     for proj_date, proj_st in ten_day_projection:
-        date_str = proj_date.strftime("%a %b %d") # e.g., Sun Apr 27
-
+        date_str = proj_date.strftime("%a %b %d")
         if proj_st.polar_day:
-            rise_str, set_str, len_str = "POLAR", "DAY", format_timedelta_hm(proj_st.length)
+            rise_str, set_str, len_str = "[yellow]POLAR[/]", "[yellow]DAY[/]", format_timedelta_hm(proj_st.length)
         elif proj_st.polar_night:
-            rise_str, set_str, len_str = "POLAR", "NIGHT", format_timedelta_hm(proj_st.length)
+            rise_str, set_str, len_str = "[blue]POLAR[/]", "[blue]NIGHT[/]", format_timedelta_hm(proj_st.length)
         else:
             rise_str = format_time_optional_hm(proj_st.rises)
             set_str = format_time_optional_hm(proj_st.sets)
             len_str = format_timedelta_hm(proj_st.length)
+        projection_table.add_row(date_str, rise_str, set_str, len_str)
+    renderables.append(Align.center(projection_table))
+    renderables.append("")
 
-        lines.append(header_fmt.format(date_str, rise_str, set_str, len_str).center(TERMINAL_WIDTH)) # Center the whole row
-
-    lines.append("")
-
-    # Your stats
+    # Your stats panel
     if ip_info:
-        lines.append("Your stats".center(TERMINAL_WIDTH))
-        lines.append(separator)
-        lines.append("")
+        stats_content = Text()
+        lat = ip_info.get('latitude')
+        lon = ip_info.get('longitude')
+        tz = ip_info.get('timezone') # This might be a pytz object or string
 
-        loc_str = f"LOCATION  Latitude {ip_info.get('latitude', 'N/A'):.2f}, Longitude {ip_info.get('longitude', 'N/A'):.2f}"
-        ip_str = f"IP ADDRESS  {ip_info.get('ip', 'N/A')}"
+        loc_str = f"Lat {lat:.2f}, Lon {lon:.2f}" if lat is not None and lon is not None else "N/A"
+        stats_content.append(Text.assemble(("Location: ", "bold"), loc_str, "\n"))
+        stats_content.append(Text.assemble(("IP Address: ", "bold"), ip_info.get('ip', 'N/A'), "\n"))
 
-        # Align these similar to day length section
-        lines.append(f"{loc_str:<{TERMINAL_WIDTH // 2 + 5}}{ip_str:>{TERMINAL_WIDTH - (TERMINAL_WIDTH // 2 + 5)}}") # Give a bit more to location
-        lines.append("")
+        tz_name = str(tz.zone) if hasattr(tz, 'zone') else str(tz) if tz else "N/A" # Handle both pytz object and string
+        stats_content.append(Text.assemble(("Timezone: ", "bold"), tz_name))
 
-    lines.append("") # Final spacer
+        renderables.append(Panel(Align.center(stats_content), title="[b]Your Stats[/b]", border_style="yellow", expand=False))
 
-    return "\n".join(lines)
+    return Group(*renderables)
 
 
 if __name__ == '__main__':
@@ -220,22 +208,23 @@ if __name__ == '__main__':
         proj_st = get_sun_times(51.5074, 0.1278, proj_d, tz_london)
         projection_data.append((proj_d, proj_st))
 
-    mock_ip_info = {
+    mock_ip_info_london = { # Renamed to avoid conflict
         "ip": "8.8.8.8",
         "latitude": 51.51,
         "longitude": -0.13,
-        "timezone": tz_london
+        "timezone": tz_london # Pass the pytz object directly
     }
 
-    print("--- Full Output (London) ---")
+    console.print("--- Full Output (London) ---")
     full_output_london = create_full_output(
         query_date=today,
         sun_times_today=st_today,
         sun_times_yesterday=st_yesterday,
         ten_day_projection=projection_data,
-        ip_info=mock_ip_info
+        ip_info=mock_ip_info_london, # Use renamed variable
+        offline_mode=False
     )
-    print(full_output_london)
+    console.print(full_output_london)
 
     # Example for Polar Night (Tromsø)
     tz_tromso_str = "Europe/Oslo"
@@ -256,14 +245,15 @@ if __name__ == '__main__':
         "ip": "9.9.9.9",
         "latitude": 69.65,
         "longitude": 18.96,
-        "timezone": tz_tromso
+        "timezone": tz_tromso # Pass the pytz object
     }
-    print("\n--- Full Output (Tromsø Winter - Polar Night) ---")
+    console.print("\n--- Full Output (Tromsø Winter - Polar Night) ---")
     full_output_tromso_winter = create_full_output(
         query_date=winter_date,
         sun_times_today=st_today_tromso_winter,
         sun_times_yesterday=st_yesterday_tromso_winter,
         ten_day_projection=projection_tromso_winter,
-        ip_info=mock_ip_info_tromso
+        ip_info=mock_ip_info_tromso,
+        offline_mode=True
     )
-    print(full_output_tromso_winter)
+    console.print(full_output_tromso_winter)

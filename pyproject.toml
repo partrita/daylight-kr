@@ -24,6 +24,7 @@ dependencies = [
     "requests",
     "pytz",
     "astral>=3.0", # astral 3.0 has some API changes from v2
+    "rich",
 ]
 
 [project.scripts]
