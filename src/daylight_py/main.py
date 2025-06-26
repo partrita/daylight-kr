@@ -1,12 +1,12 @@
 import argparse
 import datetime
-import sys  # <--- MOVE THIS HERE
-import pytz  # <--- MOVE THIS HERE
-from daylight_py.ipinfo import fetch_ip_info, IPInfoError  # <--- MOVE THIS HERE
-from daylight_py.calculations import get_sun_times  # <--- MOVE THIS HERE
-from daylight_py.json_view import create_json_output  # <--- MOVE THIS HERE
-from daylight_py.condensed_view import create_condensed_output  # <--- MOVE THIS HERE
-from daylight_py.full_view import create_full_output  # <--- MOVE THIS HERE
+import sys
+import pytz
+from .ipinfo import fetch_ip_info, IPInfoError
+from .calculations import get_sun_times
+from .json_view import create_json_output
+from .condensed_view import create_condensed_output
+from .full_view import create_full_output
 
 
 def main():

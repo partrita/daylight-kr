@@ -98,10 +98,10 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "astral", specifier = ">=3.0" },
+    { name = "astral", specifier = "==3.2" },
     { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytz" },
-    { name = "requests" },
+    { name = "pytz", specifier = "==2025.2" },
+    { name = "requests", specifier = "==2.32.4" },
     { name = "unittest-xml-reporting", marker = "extra == 'test'" },
 ]
 provides-extras = ["test"]

@@ -15,17 +15,19 @@ def format_timedelta_hm(delta, default_val="N/A"):
     if delta is None:
         return default_val
 
-    total_seconds = int(delta.total_seconds())
-    if total_seconds < 0: # Should not happen for day length, but good practice
+    # Ensure delta is a datetime.timedelta object
+    if not isinstance(delta, datetime.timedelta):
         return default_val
-
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
+    
+    total_seconds_time_part = delta.seconds
+    hours = total_seconds_time_part // 3600
+    minutes = (total_seconds_time_part % 3600) // 60
 
     if hours > 0:
         return f"{hours} hrs, {minutes} mins"
     else:
         return f"{minutes} mins"
+
 
 def format_timedelta_change(delta, default_val="N/A"):
     """Formats a timedelta to '+Xm Ys' or '-Xm Ys'."""
